@@ -28,21 +28,22 @@ export interface ApiResponse {
   status?: number;
 }
 
-// URL do webhook para enviar os dados
+// URL do webhook para enviar os dados iniciais (apenas a URL do LinkedIn)
 const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-bdfd-8dcc3d793964";
 
-// URL do nosso endpoint externo que receberá os dados processados
+// URL do endpoint externo que receberá os dados processados posteriormente
 export const ourEndpointUrl = "https://validator-linkedin.lovable.app/api/resultado";
 
-// Função para enviar a URL do LinkedIn para o webhook
+// Função para enviar APENAS a URL do LinkedIn para o webhook
 export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse> => {
   try {
     console.log("Enviando URL para o webhook:", linkedinUrl);
     
-    // Construa o objeto com os dados necessários para o webhook
+    // Enviamos apenas a URL do LinkedIn e uma referência para nosso endpoint
     const webhookData = {
       linkedinUrl,
-      callbackUrl: ourEndpointUrl, // Usando o endereço do endpoint externo
+      // O webhook pode usar este endpoint para devolver os dados processados posteriormente
+      callbackUrl: ourEndpointUrl,
       requestTime: new Date().toISOString()
     };
     
@@ -53,8 +54,11 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       headers: {
         "Content-Type": "application/json",
       },
+      // Removido o no-cors para poder acessar a resposta corretamente
       body: JSON.stringify(webhookData),
     });
+    
+    console.log("Status da resposta do webhook:", response.status);
     
     // Verificar a resposta adequadamente
     if (!response.ok) {
@@ -71,14 +75,27 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
     try {
       const responseData = await response.json();
       console.log("Resposta do webhook:", responseData);
-      return { data: null, status: response.status };
+      return { 
+        data: null, 
+        status: response.status,
+        // Adicionamos qualquer mensagem que o webhook possa retornar
+        message: responseData.message || "URL enviada com sucesso"
+      };
     } catch (e) {
       console.log("Webhook respondeu com sucesso, mas sem dados JSON");
-      return { data: null, status: response.status };
+      return { 
+        data: null, 
+        status: response.status,
+        message: "URL enviada com sucesso, sem dados retornados"
+      };
     }
   } catch (error) {
     console.error("Erro ao enviar URL para o webhook:", error);
-    return { data: null, error: String(error), status: 500 };
+    return { 
+      data: null, 
+      error: String(error), 
+      status: 500 
+    };
   }
 };
 
@@ -96,6 +113,7 @@ export const checkExternalEndpoint = async (linkedinUrl: string): Promise<ApiRes
         "Content-Type": "application/json",
         "Accept": "application/json"
       },
+      // Removido o no-cors para poder acessar a resposta corretamente
     });
     
     console.log("Status da resposta do endpoint:", response.status);
