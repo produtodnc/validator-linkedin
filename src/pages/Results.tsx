@@ -18,6 +18,12 @@ interface LinkedInProfile {
   suggestedImprovements: string[];
 }
 
+// Interface para resposta da API
+interface ApiResponse {
+  data: LinkedInProfile | null;
+  error?: string;
+}
+
 const Results = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,8 +35,13 @@ const Results = () => {
   // Recupera a URL do LinkedIn do estado de navegação
   const linkedinUrl = location.state?.linkedinUrl || "";
   
-  // Endpoint para teste
-  const testEndpoint = "https://webhook.site/d8bb66ed-56a3-472c-9a21-2f39144edd01";
+  // URL do webhook para enviar os dados
+  const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-bdfd-8dcc3d793964";
+  
+  // URL do nosso endpoint que receberá os dados processados
+  // Este endpoint seria implementado em um servidor real
+  // Para este exemplo, usaremos um endpoint de demonstração
+  const ourEndpointUrl = "https://webhook.site/d8bb66ed-56a3-472c-9a21-2f39144edd01";
   
   useEffect(() => {
     // Se não houver URL, redirecione para a página inicial
@@ -44,72 +55,110 @@ const Results = () => {
       return;
     }
     
-    // Busca os dados do perfil usando o endpoint de teste
-    const fetchProfileData = async () => {
-      setIsLoading(true);
-      setIsError(false);
-      
+    let endpointPolling: NodeJS.Timeout;
+    
+    // Função para enviar a URL do LinkedIn para o webhook
+    const sendUrlToWebhook = async () => {
       try {
-        // Enviando dados para o endpoint de teste
-        const response = await fetch(testEndpoint, {
+        // Envia a URL para o webhook especificado
+        await fetch(webhookUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          mode: "no-cors", // Para evitar erros de CORS
           body: JSON.stringify({
             linkedinUrl,
+            callbackUrl: ourEndpointUrl,
             requestTime: new Date().toISOString()
           }),
         });
-
-        // Esperamos a resposta e tentamos obter dados - em um ambiente real,
-        // esta seria uma resposta verdadeira do seu backend
-        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Dados simulados (em um cenário real, viriam da resposta do endpoint)
-        const mockData: LinkedInProfile = {
-          url: linkedinUrl,
-          name: "Nome do Usuário",
-          headline: "Desenvolvedor Front-end",
-          recommendations: 5,
-          connections: "500+",
-          completionScore: 85,
-          suggestedImprovements: [
-            "Adicione mais detalhes sobre suas experiências recentes",
-            "Complete a seção de habilidades com tecnologias relevantes",
-            "Solicite mais recomendações de colegas de trabalho"
-          ]
-        };
+        console.log("URL do LinkedIn enviada para o webhook");
         
-        // Enviando dados do perfil simulado para o endpoint
-        await fetch(testEndpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "profile_processed",
-            profile: mockData,
-            processTime: new Date().toISOString()
-          }),
-        });
-        
-        setProfile(mockData);
+        // Inicia o polling do nosso endpoint para verificar se os dados já foram processados
+        startPollingEndpoint();
       } catch (error) {
-        console.error("Erro ao buscar dados do perfil:", error);
+        console.error("Erro ao enviar URL para o webhook:", error);
         setIsError(true);
+        setIsLoading(false);
         toast({
           title: "Erro",
-          description: "Não foi possível obter os dados do perfil",
+          description: "Não foi possível enviar os dados para processamento",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     };
     
-    fetchProfileData();
-  }, [linkedinUrl, navigate, toast]);
+    // Função para iniciar o polling do nosso endpoint
+    const startPollingEndpoint = () => {
+      // Verifica o endpoint a cada 3 segundos
+      endpointPolling = setInterval(checkEndpointForData, 3000);
+    };
+    
+    // Função para verificar se os dados já foram processados
+    const checkEndpointForData = async () => {
+      try {
+        // Consulta nosso endpoint com a URL como parâmetro para identificar os dados específicos
+        const response = await fetch(`${ourEndpointUrl}?url=${encodeURIComponent(linkedinUrl)}`);
+        
+        // Como estamos usando um endpoint de demonstração, vamos simular a resposta
+        // Em um cenário real, aqui você iria verificar a resposta real do seu endpoint
+        
+        // Simulando um tempo de processamento
+        const currentTime = new Date().getTime();
+        const startTime = sessionStorage.getItem('processingStartTime');
+        
+        if (!startTime) {
+          sessionStorage.setItem('processingStartTime', currentTime.toString());
+          return; // Continua o polling
+        }
+        
+        // Simula receber dados após 10 segundos
+        if (currentTime - parseInt(startTime) > 10000) {
+          // Simulando dados recebidos
+          const mockData: LinkedInProfile = {
+            url: linkedinUrl,
+            name: "Nome do Usuário",
+            headline: "Desenvolvedor Front-end",
+            recommendations: 5,
+            connections: "500+",
+            completionScore: 85,
+            suggestedImprovements: [
+              "Adicione mais detalhes sobre suas experiências recentes",
+              "Complete a seção de habilidades com tecnologias relevantes",
+              "Solicite mais recomendações de colegas de trabalho"
+            ]
+          };
+          
+          // Limpa o intervalo de polling
+          clearInterval(endpointPolling);
+          sessionStorage.removeItem('processingStartTime');
+          
+          // Atualiza o estado com os dados recebidos
+          setProfile(mockData);
+          setIsLoading(false);
+          
+          toast({
+            title: "Análise concluída",
+            description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao verificar dados no endpoint:", error);
+        // Não definimos isError como true aqui para continuar tentando
+      }
+    };
+    
+    // Inicia o processo
+    sendUrlToWebhook();
+    
+    // Limpa o intervalo quando o componente é desmontado
+    return () => {
+      if (endpointPolling) clearInterval(endpointPolling);
+      sessionStorage.removeItem('processingStartTime');
+    };
+  }, [linkedinUrl, navigate, toast, webhookUrl, ourEndpointUrl]);
   
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
@@ -122,7 +171,8 @@ const Results = () => {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-12">
               <div className="h-12 w-12 border-4 border-t-[#0FA0CE] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-600">Aguarde enquanto analisamos seu perfil do LinkedIn...</p>
+              <p className="text-gray-600 mt-4">Aguarde enquanto processamos seu perfil do LinkedIn...</p>
+              <p className="text-gray-500 text-sm mt-2">Este processo pode levar até 15 segundos.</p>
             </div>
           ) : isError ? (
             <div className="text-center p-8">
