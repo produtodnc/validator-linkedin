@@ -54,7 +54,7 @@ const Home = () => {
       <Header />
       
       <main className="flex-grow flex flex-col items-center justify-center px-4">
-        <div className="max-w-3xl w-full text-center mb-12">
+        <div className="max-w-5xl w-full text-center mb-52 mx-0 px-0 my-0 py-0">
           <h1 className="font-bold mb-6 text-[#1A1F2C] text-7xl px-[8px] py-[6px]">Validador de Linkedin</h1>
           <p className="text-lg text-gray-600 mb-8">Adicione o link do seu perfil para aumentar suas chances de conseguir a vaga dos sonhos</p>
           
