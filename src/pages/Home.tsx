@@ -11,7 +11,6 @@ import Footer from "@/components/Footer";
 const Home = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -31,21 +30,6 @@ const Home = () => {
     setIsLoading(true);
     
     try {
-      // Se o webhook URL estiver definido, envie os dados para ele
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          mode: "no-cors",
-          body: JSON.stringify({
-            linkedinUrl,
-            timestamp: new Date().toISOString(),
-          }),
-        });
-      }
-      
       // Simulação de validação concluída com sucesso
       toast({
         title: "Perfil enviado",
@@ -78,47 +62,29 @@ const Home = () => {
           </p>
           
           <form onSubmit={handleSubmit} className="flex flex-col w-full">
-            <div className="flex flex-col md:flex-row gap-2 mb-4">
-              <div className="relative flex-grow">
-                <Input
-                  type="url"
-                  placeholder="https://www.linkedin.com/in/seu-perfil/"
-                  value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
-                  className="h-12 pr-4 pl-4 rounded-lg w-full"
-                  required
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="h-12 px-6 bg-[#0FA0CE] hover:bg-[#1EAEDB] text-white rounded-lg"
-                disabled={isLoading}
-              >
-                {isLoading ? "Enviando..." : (
-                  <>
-                    Enviar <ArrowRight className="ml-2" />
-                  </>
-                )}
-              </Button>
-            </div>
-            
-            <div className="text-left mt-8">
-              <h3 className="text-sm font-medium mb-2 text-gray-700">Configurações avançadas (opcional)</h3>
-              <div className="flex flex-col mb-2">
-                <label htmlFor="webhookUrl" className="text-xs text-gray-500 mb-1">
-                  Webhook URL para processar os dados
-                </label>
-                <Input
-                  id="webhookUrl"
-                  type="url"
-                  placeholder="https://seu-webhook.com/endpoint"
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  className="text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Adicione aqui sua URL de Webhook para processamento personalizado dos dados
-                </p>
+            <div className="w-full max-w-4xl mx-auto mb-8">
+              <div className="relative flex w-full items-center">
+                <div className="relative flex-grow">
+                  <Input
+                    type="url"
+                    placeholder="https://www.linkedin.com/in/seu-perfil/"
+                    value={linkedinUrl}
+                    onChange={(e) => setLinkedinUrl(e.target.value)}
+                    className="h-16 pr-16 pl-6 rounded-full shadow-lg w-full text-gray-700 bg-white"
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="absolute right-1 rounded-full w-14 h-14 bg-[#0A66C2] hover:bg-[#004182] flex items-center justify-center"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="h-5 w-5 border-t-2 border-r-2 border-white rounded-full animate-spin" />
+                  ) : (
+                    <ArrowRight className="text-white" size={24} />
+                  )}
+                </Button>
               </div>
             </div>
           </form>
