@@ -1,4 +1,3 @@
-
 // Interface para dados do perfil LinkedIn
 export interface LinkedInProfile {
   url: string;
@@ -105,47 +104,55 @@ export const checkExternalEndpoint = async (linkedinUrl: string): Promise<ApiRes
   try {
     console.log("Verificando dados no endpoint externo para URL:", linkedinUrl);
     
-    // Modificado para usar método POST em vez de GET
-    const response = await fetch(ourEndpointUrl, {
+    // Criando um objeto de dados de perfil para enviar no corpo
+    const profileData = {
+      url: linkedinUrl,
+      // Podemos incluir dados adicionais conforme necessário
+      requestTime: new Date().toISOString()
+    };
+    
+    // Usando o formato fetch solicitado
+    return fetch(ourEndpointUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json"
       },
-      body: JSON.stringify({ url: linkedinUrl }),
-      // Removido o no-cors para poder acessar a resposta corretamente
+      body: JSON.stringify(profileData)
+    })
+    .then(response => {
+      console.log("Status da resposta do endpoint:", response.status);
+      
+      if (!response.ok) {
+        return response.text().then(errorText => {
+          console.error("Erro ao verificar dados no endpoint:", errorText);
+          return { 
+            data: null, 
+            error: `Erro ${response.status}: ${errorText || response.statusText}`,
+            status: response.status
+          };
+        });
+      }
+      
+      return response.json().then(data => {
+        console.log("Dados recebidos do endpoint:", data);
+        return { 
+          data, 
+          status: response.status
+        };
+      });
+    })
+    .catch(error => {
+      console.error("Erro ao verificar dados no endpoint:", error);
+      return { 
+        data: null, 
+        error: String(error),
+        status: 500
+      };
     });
     
-    console.log("Status da resposta do endpoint:", response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erro ao verificar dados no endpoint:", errorText);
-      return { 
-        data: null, 
-        error: `Erro ${response.status}: ${errorText || response.statusText}`,
-        status: response.status
-      };
-    }
-    
-    // Tenta parsear a resposta como JSON
-    try {
-      const data = await response.json();
-      console.log("Dados recebidos do endpoint:", data);
-      return { 
-        data, 
-        status: response.status
-      };
-    } catch (e) {
-      console.error("Erro ao parsear resposta JSON:", e);
-      return { 
-        data: null, 
-        error: "Erro ao processar resposta do servidor",
-        status: response.status
-      };
-    }
   } catch (error) {
-    console.error("Erro ao verificar dados no endpoint:", error);
+    console.error("Erro geral ao verificar dados no endpoint:", error);
     return { 
       data: null, 
       error: String(error),

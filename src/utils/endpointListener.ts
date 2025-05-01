@@ -50,9 +50,8 @@ export const setupEndpointListener = () => {
                 window._receivedLinkedInData = {};
               }
               
-              // Simula processamento de dados
-              // Podemos usar os dados do corpo diretamente ou gerar simulados
-              window._receivedLinkedInData[linkedinUrl] = body.data || {
+              // Simula processamento de dados e resposta
+              const profileResponse = {
                 url: linkedinUrl,
                 name: "Perfil do LinkedIn",
                 headline: "Desenvolvedor Front-end",
@@ -70,18 +69,27 @@ export const setupEndpointListener = () => {
                 Projetos_feedback: "Bons projetos, considere adicionar links ou imagens.",
                 Certificados_feedback: "Certificados relevantes, mas alguns estão desatualizados."
               };
+              
+              // Armazena os dados para uso posterior
+              window._receivedLinkedInData[linkedinUrl] = profileResponse;
+              
+              // Aciona evento customizado para notificar que os dados foram recebidos
+              triggerEndpointEvent({
+                url: linkedinUrl,
+                data: profileResponse,
+                status: 200
+              });
+              
+              // Simula uma resposta de sucesso com os mesmos dados
+              return Promise.resolve(new Response(JSON.stringify(profileResponse), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              }));
             }
             
-            // Aciona evento customizado para notificar que os dados foram recebidos
-            triggerEndpointEvent({
-              url: linkedinUrl,
-              data: window._receivedLinkedInData[linkedinUrl],
-              status: 200
-            });
-            
-            // Simula uma resposta de sucesso
-            return Promise.resolve(new Response(JSON.stringify({ success: true }), {
-              status: 200,
+            // Simula uma resposta de erro se não houver URL
+            return Promise.resolve(new Response(JSON.stringify({ error: 'URL do LinkedIn não fornecida' }), {
+              status: 400,
               headers: { 'Content-Type': 'application/json' }
             }));
           } else {
