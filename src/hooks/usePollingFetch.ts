@@ -42,6 +42,8 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     try {
       // Primeiro verificamos se já recebemos os dados via POST simulado
       if (window._receivedLinkedInData && window._receivedLinkedInData[linkedinUrl]) {
+        console.log("[POLLING] Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
+        
         const data = window._receivedLinkedInData[linkedinUrl];
         delete window._receivedLinkedInData[linkedinUrl];
         
@@ -60,6 +62,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
       const data = await fetchProfileData(linkedinUrl);
       
       if (data) {
+        console.log("[POLLING] Dados encontrados via fetchProfileData:", data);
         // Dados disponíveis
         setProfile(data);
         setIsLoading(false);
@@ -93,8 +96,11 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
       const dataReceived = await checkEndpointForData();
       
       if (!dataReceived) {
+        console.log("[POLLING] Iniciando polling para URL:", linkedinUrl);
+        
         // Se ainda não há dados, começar polling
         pollingInterval = setInterval(async () => {
+          console.log("[POLLING] Verificando novos dados...");
           const received = await checkEndpointForData();
           if (received && pollingInterval) {
             clearInterval(pollingInterval);

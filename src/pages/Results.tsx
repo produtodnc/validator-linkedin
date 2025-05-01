@@ -11,6 +11,43 @@ import ProfileDisplay from "@/components/results/ProfileDisplay";
 import { sendUrlToWebhook } from "@/services/linkedinService";
 import { usePollingFetch } from "@/hooks/usePollingFetch";
 
+// Este componente recebe dados via POST
+// Para fins de exemplo e teste, adicionamos um listener a seguir:
+if (typeof window !== 'undefined' && !window._endpointListenerAdded) {
+  window._endpointListenerAdded = true;
+  
+  // Simula um endpoint que recebe dados via POST
+  console.log("[SETUP] Configurando receptor de endpoint simulado");
+  
+  // Simular recebimento de dados (para testes)
+  // Descomente e ajuste isto para testar o endpoint
+  /*
+  setTimeout(() => {
+    if (window._receivedLinkedInData && window.location.pathname.includes('resultados')) {
+      const currentUrl = new URLSearchParams(window.location.search).get('url') || 
+                         (history.state && history.state.linkedinUrl);
+      
+      if (currentUrl) {
+        console.log("[TEST] Simulando recebimento de dados para:", currentUrl);
+        window._receivedLinkedInData[currentUrl] = {
+          url: currentUrl,
+          name: "Usuário Teste",
+          headline: "Profissional de Teste",
+          recommendations: 8,
+          connections: "750+",
+          completionScore: 92,
+          suggestedImprovements: [
+            "Adicione um resumo mais detalhado",
+            "Complemente sua formação acadêmica",
+            "Adicione certificações relevantes"
+          ]
+        };
+      }
+    }
+  }, 15000);
+  */
+}
+
 const Results = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,6 +71,11 @@ const Results = () => {
       return;
     }
     
+    // Registra a URL na sessão para facilitar a identificação na recepção dos dados
+    sessionStorage.setItem('currentProfileUrl', linkedinUrl);
+    
+    console.log("[RESULTS] Iniciando análise para URL:", linkedinUrl);
+    
     // Envia a URL para o webhook quando o componente é montado
     const initializeProcess = async () => {
       try {
@@ -49,6 +91,11 @@ const Results = () => {
     };
     
     initializeProcess();
+    
+    // Limpeza ao desmontar
+    return () => {
+      sessionStorage.removeItem('currentProfileUrl');
+    };
   }, [linkedinUrl, navigate, toast]);
   
   // Renderiza o componente apropriado com base no estado atual
@@ -79,5 +126,12 @@ const Results = () => {
     </div>
   );
 };
+
+// Adiciona a declaração global para o TypeScript
+declare global {
+  interface Window {
+    _endpointListenerAdded?: boolean;
+  }
+}
 
 export default Results;
