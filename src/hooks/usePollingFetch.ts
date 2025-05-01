@@ -30,12 +30,14 @@ interface PollingFetchResult {
   isLoading: boolean;
   isError: boolean;
   profile: LinkedInProfile | null;
+  dataReceived: boolean;
 }
 
 export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
   const [profile, setProfile] = useState<LinkedInProfile | null>(null);
+  const [dataReceived, setDataReceived] = useState<boolean>(false);
   const { toast } = useToast();
 
   const checkEndpointForData = useCallback(async () => {
@@ -78,6 +80,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         console.log("[POLLING] Dados convertidos para o formato do perfil:", profileData);
         setProfile(profileData);
         setIsLoading(false);
+        setDataReceived(true);
         
         toast({
           title: "Análise concluída",
@@ -95,6 +98,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         // Dados disponíveis
         setProfile(data);
         setIsLoading(false);
+        setDataReceived(true);
         
         toast({
           title: "Análise concluída",
@@ -110,6 +114,21 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
       return false; // Continuar tentando
     }
   }, [linkedinUrl, toast]);
+
+  // Ouvir o evento personalizado de dados recebidos
+  useEffect(() => {
+    const handleEndpointData = (event: CustomEvent) => {
+      if (event.detail?.url === linkedinUrl) {
+        checkEndpointForData();
+      }
+    };
+
+    window.addEventListener('endpointDataReceived', handleEndpointData as EventListener);
+    
+    return () => {
+      window.removeEventListener('endpointDataReceived', handleEndpointData as EventListener);
+    };
+  }, [linkedinUrl, checkEndpointForData]);
 
   useEffect(() => {
     if (!linkedinUrl) {
@@ -175,5 +194,5 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     };
   }, [linkedinUrl, checkEndpointForData, toast, isLoading]);
 
-  return { isLoading, isError, profile };
+  return { isLoading, isError, profile, dataReceived };
 };

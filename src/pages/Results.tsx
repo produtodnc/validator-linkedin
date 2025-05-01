@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
@@ -11,6 +11,7 @@ import ProfileDisplay from "@/components/results/ProfileDisplay";
 import { sendUrlToWebhook } from "@/services/linkedinService";
 import { usePollingFetch } from "@/hooks/usePollingFetch";
 import { LinkedInProfile } from "@/services/linkedinService";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 // Este componente recebe dados via POST
 // Para fins de exemplo e teste, adicionamos um listener a seguir:
@@ -39,6 +40,15 @@ if (typeof window !== 'undefined' && !window._endpointListenerAdded) {
           window._receivedLinkedInData[currentProfileUrl] = body;
         }
         
+        // Disparar evento personalizado para notificar que os dados foram recebidos
+        const customEvent = new CustomEvent('endpointDataReceived', { 
+          detail: { 
+            url: currentProfileUrl,
+            data: body
+          } 
+        });
+        window.dispatchEvent(customEvent);
+        
         // Simula uma resposta de sucesso
         return Promise.resolve(new Response(JSON.stringify({ success: true }), {
           status: 200,
@@ -63,14 +73,27 @@ const Results = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [endpointStatus, setEndpointStatus] = useState<number | null>(null);
   
   // Recupera a URL do LinkedIn do estado de navegação
   const linkedinUrl = location.state?.linkedinUrl || "";
   
   // Usa o hook de polling para buscar os dados
-  const { isLoading, isError, profile } = usePollingFetch(linkedinUrl);
+  const { isLoading, isError, profile, dataReceived } = usePollingFetch(linkedinUrl);
   
   useEffect(() => {
+    // Listener para o evento personalizado
+    const handleEndpointData = (event: CustomEvent) => {
+      console.log("[RESULTS] Dados recebidos do endpoint:", event.detail);
+      setEndpointStatus(200);
+      toast({
+        title: "Sucesso",
+        description: "Os dados foram enviados com sucesso",
+      });
+    };
+
+    window.addEventListener('endpointDataReceived', handleEndpointData as EventListener);
+    
     // Se não houver URL, redirecione para a página inicial
     if (!linkedinUrl) {
       toast({
@@ -106,6 +129,7 @@ const Results = () => {
     // Limpeza ao desmontar
     return () => {
       sessionStorage.removeItem('currentProfileUrl');
+      window.removeEventListener('endpointDataReceived', handleEndpointData as EventListener);
     };
   }, [linkedinUrl, navigate, toast]);
   
@@ -115,10 +139,24 @@ const Results = () => {
       return <LoadingState />;
     } else if (isError) {
       return <ErrorState />;
-    } else if (!profile) {
-      return <NoDataState />;
+    } else if (!dataReceived) {
+      return <NoDataState message="Aguardando dados do endpoint /api/resultado..." />;
+    } else if (profile) {
+      return (
+        <>
+          {endpointStatus === 200 && (
+            <Alert className="mb-6 bg-green-50">
+              <AlertTitle>Sucesso!</AlertTitle>
+              <AlertDescription>
+                Os dados foram recebidos com sucesso no endpoint e estão sendo exibidos abaixo.
+              </AlertDescription>
+            </Alert>
+          )}
+          <ProfileDisplay profile={profile} />
+        </>
+      );
     } else {
-      return <ProfileDisplay profile={profile} />;
+      return <NoDataState />;
     }
   };
   
