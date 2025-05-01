@@ -35,20 +35,16 @@ const ProfileDisplay = ({ profile }: ProfileDisplayProps) => {
               <p className="text-sm text-gray-600 break-all">{profile.url}</p>
             </div>
             <div>
-              <p className="font-medium text-gray-700">Nome</p>
-              <p className="text-gray-900">{profile.name}</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-700">Título</p>
+              <p className="font-medium text-gray-700">Análise de Headline</p>
               <p className="text-gray-900">{profile.headline}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="font-medium text-gray-700">Recomendações</p>
-                <p className="text-gray-900">{profile.recommendations}</p>
+                <p className="font-medium text-gray-700">Nota Certificados</p>
+                <p className="text-gray-900">{profile.recommendations}/5</p>
               </div>
               <div>
-                <p className="font-medium text-gray-700">Conexões</p>
+                <p className="font-medium text-gray-700">Nota Experiência</p>
                 <p className="text-gray-900">{profile.connections}</p>
               </div>
             </div>

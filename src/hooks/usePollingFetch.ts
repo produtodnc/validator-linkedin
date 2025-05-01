@@ -40,14 +40,38 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
 
   const checkEndpointForData = useCallback(async () => {
     try {
+      console.log("[POLLING] Verificando dados para URL:", linkedinUrl);
+      
       // Primeiro verificamos se já recebemos os dados via POST simulado
       if (window._receivedLinkedInData && window._receivedLinkedInData[linkedinUrl]) {
         console.log("[POLLING] Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
         
         const data = window._receivedLinkedInData[linkedinUrl];
-        delete window._receivedLinkedInData[linkedinUrl];
+        delete window._receivedLinkedInData[linkedinUrl]; // Limpamos para evitar duplicação
         
-        setProfile(data);
+        // Adaptação dos dados recebidos para o formato esperado por ProfileDisplay
+        const profileData: LinkedInProfile = {
+          url: linkedinUrl,
+          name: "Perfil LinkedIn",
+          headline: data.Headline_feedback ? "Headline: " + data.nota_headline + "/5" : "Sem headline",
+          recommendations: data.nota_certificados || 0,
+          connections: data.nota_experiencia ? data.nota_experiencia + "/5" : "N/A",
+          completionScore: Math.round(((data.nota_headline || 0) + 
+                                     (data.nota_sobre || 0) + 
+                                     (data.nota_experiencia || 0) + 
+                                     (data.nota_projetos || 0) + 
+                                     (data.nota_certificados || 0)) / 5 * 20),
+          suggestedImprovements: [
+            data.Headline_feedback || "",
+            data.Sobre_feedback || "",
+            data.Experiencias_feedback || "",
+            data.Projetos_feedback || "",
+            data.Certificados_feedback || ""
+          ].filter(item => item !== "")
+        };
+        
+        console.log("[POLLING] Dados convertidos para o formato do perfil:", profileData);
+        setProfile(profileData);
         setIsLoading(false);
         
         toast({
@@ -107,7 +131,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
           }
         }, 3000);
         
-        // Timeout após 120 segundos para evitar polling infinito (aumentado de 30 para 120 segundos)
+        // Timeout após 120 segundos para evitar polling infinito
         timeoutId = setTimeout(() => {
           if (pollingInterval) {
             clearInterval(pollingInterval);
@@ -123,7 +147,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
               variant: "destructive",
             });
           }
-        }, 120000); // Aumentado para 120 segundos (2 minutos)
+        }, 120000); // 120 segundos (2 minutos)
       }
     };
     

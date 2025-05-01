@@ -16,36 +16,46 @@ import { usePollingFetch } from "@/hooks/usePollingFetch";
 if (typeof window !== 'undefined' && !window._endpointListenerAdded) {
   window._endpointListenerAdded = true;
   
-  // Simula um endpoint que recebe dados via POST
-  console.log("[SETUP] Configurando receptor de endpoint simulado");
+  // Configura um listener para interceptar requisições ao endpoint simulado
+  console.log("[SETUP] Configurando receptor de endpoint simulado /api/resultado");
   
-  // Simular recebimento de dados (para testes)
-  // Descomente e ajuste isto para testar o endpoint
-  /*
-  setTimeout(() => {
-    if (window._receivedLinkedInData && window.location.pathname.includes('resultados')) {
-      const currentUrl = new URLSearchParams(window.location.search).get('url') || 
-                         (history.state && history.state.linkedinUrl);
-      
-      if (currentUrl) {
-        console.log("[TEST] Simulando recebimento de dados para:", currentUrl);
-        window._receivedLinkedInData[currentUrl] = {
-          url: currentUrl,
-          name: "Usuário Teste",
-          headline: "Profissional de Teste",
-          recommendations: 8,
-          connections: "750+",
-          completionScore: 92,
-          suggestedImprovements: [
-            "Adicione um resumo mais detalhado",
-            "Complemente sua formação acadêmica",
-            "Adicione certificações relevantes"
-          ]
-        };
+  // Monkey patch fetch para interceptar chamadas ao nosso endpoint
+  const originalFetch = window.fetch;
+  window.fetch = async function(input, init) {
+    const url = input.toString();
+    
+    // Intercepta apenas chamadas POST ao nosso endpoint
+    if (url.endsWith('/api/resultado') && init?.method === 'POST') {
+      console.log("[ENDPOINT] Recebendo dados no endpoint /api/resultado");
+      try {
+        const body = init.body ? JSON.parse(init.body.toString()) : {};
+        console.log("[ENDPOINT] Dados recebidos:", body);
+        
+        // Recupera a URL atual do LinkedIn da sessão
+        const currentProfileUrl = sessionStorage.getItem('currentProfileUrl');
+        if (currentProfileUrl && window._receivedLinkedInData) {
+          console.log("[ENDPOINT] Associando dados à URL:", currentProfileUrl);
+          window._receivedLinkedInData[currentProfileUrl] = body;
+        }
+        
+        // Simula uma resposta de sucesso
+        return Promise.resolve(new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        }));
+      } catch (error) {
+        console.error("[ENDPOINT] Erro ao processar dados:", error);
+        // Simula uma resposta de erro
+        return Promise.resolve(new Response(JSON.stringify({ error: 'Erro ao processar dados' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }));
       }
     }
-  }, 15000);
-  */
+    
+    // Para todas as outras chamadas, usa o fetch original
+    return originalFetch.apply(this, [input, init]);
+  };
 }
 
 const Results = () => {
@@ -131,6 +141,9 @@ const Results = () => {
 declare global {
   interface Window {
     _endpointListenerAdded?: boolean;
+    _receivedLinkedInData?: {
+      [url: string]: any;
+    };
   }
 }
 

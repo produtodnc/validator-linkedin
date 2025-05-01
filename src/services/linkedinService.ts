@@ -8,6 +8,17 @@ export interface LinkedInProfile {
   connections: string;
   completionScore: number;
   suggestedImprovements: string[];
+  // Campos adicionais para os dados recebidos
+  Headline_feedback?: string;
+  nota_headline?: number;
+  Sobre_feedback?: string;
+  nota_sobre?: number;
+  Experiencias_feedback?: string;
+  nota_experiencia?: number;
+  Projetos_feedback?: string;
+  nota_projetos?: number;
+  Certificados_feedback?: string;
+  nota_certificados?: number;
 }
 
 // Interface para resposta da API
@@ -61,7 +72,15 @@ export const fetchProfileData = async (linkedinUrl: string): Promise<LinkedInPro
       return null; // Continua o polling
     }
     
-    // Simula receber dados após 10 segundos
+    // Verificar se há dados no armazenamento global primeiro
+    if (window._receivedLinkedInData && window._receivedLinkedInData[linkedinUrl]) {
+      console.log("Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
+      const data = window._receivedLinkedInData[linkedinUrl];
+      delete window._receivedLinkedInData[linkedinUrl];
+      return data;
+    }
+    
+    // Simula receber dados após 10 segundos (mantemos este comportamento como fallback)
     if (currentTime - parseInt(startTime) > 10000) {
       // Simulando dados recebidos
       const mockData: LinkedInProfile = {
