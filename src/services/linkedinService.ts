@@ -187,7 +187,7 @@ export const fetchProfileData = async (linkedinUrl: string): Promise<LinkedInPro
       // Simulando dados recebidos
       const mockData: LinkedInProfile = {
         url: linkedinUrl,
-        name: "Nome do Usuário",
+        name: "Deu errro do Usuário",
         headline: "Desenvolvedor Front-end",
         recommendations: 5,
         connections: "500+",
