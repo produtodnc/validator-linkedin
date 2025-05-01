@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -6,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+
 const Home = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  
+  const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-bdfd-8dcc3d793964";
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -25,9 +28,23 @@ const Home = () => {
       });
       return;
     }
+
     setIsLoading(true);
+    
     try {
-      // Simulação de validação concluída com sucesso
+      // Enviando dados para o webhook especificado
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        mode: "no-cors", // Adicionado para lidar com CORS
+        body: JSON.stringify({
+          linkedinUrl,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
       toast({
         title: "Perfil enviado",
         description: "Seu perfil do LinkedIn foi enviado para validação"
@@ -50,6 +67,7 @@ const Home = () => {
       setIsLoading(false);
     }
   };
+
   return <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
       <Header />
       
@@ -76,4 +94,5 @@ const Home = () => {
       <Footer />
     </div>;
 };
+
 export default Home;
