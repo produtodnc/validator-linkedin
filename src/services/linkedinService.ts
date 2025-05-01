@@ -35,7 +35,7 @@ const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-b
 export const ourEndpointUrl = "/api/resultado";
 
 // Função para enviar a URL do LinkedIn para o webhook
-export const sendUrlToWebhook = async (linkedinUrl: string): Promise<void> => {
+export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse> => {
   try {
     console.log("Enviando URL para o webhook:", linkedinUrl);
     
@@ -53,14 +53,33 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<void> => {
       headers: {
         "Content-Type": "application/json",
       },
-      mode: "no-cors", // Para evitar erros de CORS
+      // Removido o modo no-cors para poder acessar a resposta
       body: JSON.stringify(webhookData),
     });
     
-    console.log("URL do LinkedIn enviada para o webhook");
+    // Agora podemos verificar a resposta adequadamente
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erro ao enviar URL para o webhook:", errorText);
+      return { 
+        data: null, 
+        error: `Erro ${response.status}: ${errorText || response.statusText}`,
+        status: response.status
+      };
+    }
+    
+    // Tenta parsear a resposta como JSON
+    try {
+      const responseData = await response.json();
+      console.log("Resposta do webhook:", responseData);
+      return { data: null, status: response.status };
+    } catch (e) {
+      console.log("Webhook respondeu com sucesso, mas sem dados JSON");
+      return { data: null, status: response.status };
+    }
   } catch (error) {
     console.error("Erro ao enviar URL para o webhook:", error);
-    throw error;
+    return { data: null, error: String(error), status: 500 };
   }
 };
 

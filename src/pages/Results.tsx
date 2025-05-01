@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -140,11 +139,20 @@ const Results = () => {
     // Envia a URL para o webhook quando o componente é montado
     const initializeProcess = async () => {
       try {
-        await sendUrlToWebhook(linkedinUrl);
-        toast({
-          title: "Processando",
-          description: "A URL foi enviada para análise. Aguardando resultados...",
-        });
+        const response = await sendUrlToWebhook(linkedinUrl);
+        
+        if (response.error) {
+          toast({
+            title: "Erro",
+            description: response.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Processando",
+            description: "A URL foi enviada para análise. Aguardando resultados...",
+          });
+        }
       } catch (error) {
         console.error("Erro ao iniciar o processo:", error);
         toast({

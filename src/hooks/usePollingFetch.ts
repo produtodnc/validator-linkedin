@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { LinkedInProfile, fetchProfileData } from "@/services/linkedinService";
+import { LinkedInProfile, fetchProfileData, ApiResponse } from "@/services/linkedinService";
 import { useToast } from "@/hooks/use-toast";
 
 // Inicialize o objeto se ainda não existir
