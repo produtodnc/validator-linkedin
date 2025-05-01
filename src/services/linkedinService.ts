@@ -1,4 +1,3 @@
-
 // Interface para dados do perfil LinkedIn
 export interface LinkedInProfile {
   url: string;
@@ -26,6 +25,7 @@ export interface ApiResponse {
   data: LinkedInProfile | null;
   error?: string;
   status?: number;
+  message?: string; // Adicionando a propriedade message que faltava
 }
 
 // URL do webhook para enviar os dados iniciais (apenas a URL do LinkedIn)
