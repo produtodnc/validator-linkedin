@@ -23,6 +23,7 @@ const Results = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
   const [profile, setProfile] = useState<LinkedInProfile | null>(null);
   
   // Recupera a URL do LinkedIn do estado de navegação
@@ -40,15 +41,21 @@ const Results = () => {
       return;
     }
     
-    // Simula uma chamada de API para obter os resultados da validação
+    // Simula uma chamada para um endpoint que busca os dados do perfil
     const fetchProfileData = async () => {
       setIsLoading(true);
+      setIsError(false);
       
       try {
-        // Simulando tempo de processamento
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Simulando tempo de processamento e chamada para um endpoint
+        const response = await fetch(`https://api.example.com/linkedin-validator?url=${encodeURIComponent(linkedinUrl)}`, { 
+          method: "GET",
+          // Este é um endpoint simulado, na implementação real você usaria um endpoint real
+          // Como estamos apenas simulando, vamos cancelar a chamada e usar dados fictícios
+          signal: AbortSignal.timeout(1500) 
+        });
         
-        // Dados simulados (em um cenário real, viriam da API)
+        // Dados simulados (em um cenário real, viriam da resposta do endpoint)
         const mockData: LinkedInProfile = {
           url: linkedinUrl,
           name: "Nome do Usuário",
@@ -66,6 +73,7 @@ const Results = () => {
         setProfile(mockData);
       } catch (error) {
         console.error("Erro ao buscar dados do perfil:", error);
+        setIsError(true);
         toast({
           title: "Erro",
           description: "Não foi possível obter os dados do perfil",
@@ -90,7 +98,17 @@ const Results = () => {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-12">
               <div className="h-12 w-12 border-4 border-t-[#0FA0CE] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-600">Analisando seu perfil do LinkedIn...</p>
+              <p className="text-gray-600">Aguarde enquanto analisamos seu perfil do LinkedIn...</p>
+            </div>
+          ) : isError ? (
+            <div className="text-center p-8">
+              <p className="text-gray-600">Ocorreu um erro ao buscar os dados do perfil.</p>
+              <Button 
+                onClick={() => navigate("/")} 
+                className="mt-4 bg-[#0FA0CE] hover:bg-[#1EAEDB] text-white"
+              >
+                Voltar e tentar novamente
+              </Button>
             </div>
           ) : profile ? (
             <div className="space-y-6">
