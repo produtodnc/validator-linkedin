@@ -49,25 +49,30 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         const data = window._receivedLinkedInData[linkedinUrl];
         delete window._receivedLinkedInData[linkedinUrl]; // Limpamos para evitar duplicação
         
-        // Adaptação dos dados recebidos para o formato esperado por ProfileDisplay
+        // Vamos usar diretamente os dados recebidos, preservando os campos brutos
         const profileData: LinkedInProfile = {
           url: linkedinUrl,
           name: "Perfil LinkedIn",
-          headline: data.Headline_feedback ? "Headline: " + data.nota_headline + "/5" : "Sem headline",
-          recommendations: data.nota_certificados || 0,
-          connections: data.nota_experiencia ? data.nota_experiencia + "/5" : "N/A",
-          completionScore: Math.round(((data.nota_headline || 0) + 
+          headline: data.headline || "Análise de Headline",
+          recommendations: data.recommendations || data.nota_certificados || 0,
+          connections: data.connections || (data.nota_experiencia ? data.nota_experiencia + "/5" : "N/A"),
+          completionScore: data.completionScore || Math.round(((data.nota_headline || 0) + 
                                      (data.nota_sobre || 0) + 
                                      (data.nota_experiencia || 0) + 
                                      (data.nota_projetos || 0) + 
                                      (data.nota_certificados || 0)) / 5 * 20),
-          suggestedImprovements: [
-            data.Headline_feedback || "",
-            data.Sobre_feedback || "",
-            data.Experiencias_feedback || "",
-            data.Projetos_feedback || "",
-            data.Certificados_feedback || ""
-          ].filter(item => item !== "")
+          suggestedImprovements: data.suggestedImprovements || [],
+          // Adicionando os campos brutos recebidos no POST
+          Headline_feedback: data.Headline_feedback,
+          nota_headline: data.nota_headline,
+          Sobre_feedback: data.Sobre_feedback,
+          nota_sobre: data.nota_sobre,
+          Experiencias_feedback: data.Experiencias_feedback,
+          nota_experiencia: data.nota_experiencia,
+          Projetos_feedback: data.Projetos_feedback,
+          nota_projetos: data.nota_projetos,
+          Certificados_feedback: data.Certificados_feedback,
+          nota_certificados: data.nota_certificados
         };
         
         console.log("[POLLING] Dados convertidos para o formato do perfil:", profileData);

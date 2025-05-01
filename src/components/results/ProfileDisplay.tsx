@@ -13,6 +13,16 @@ interface LinkedInProfile {
   connections: string;
   completionScore: number;
   suggestedImprovements: string[];
+  Headline_feedback?: string;
+  nota_headline?: number;
+  Sobre_feedback?: string;
+  nota_sobre?: number;
+  Experiencias_feedback?: string;
+  nota_experiencia?: number;
+  Projetos_feedback?: string;
+  nota_projetos?: number;
+  Certificados_feedback?: string;
+  nota_certificados?: number;
 }
 
 interface ProfileDisplayProps {
@@ -34,20 +44,46 @@ const ProfileDisplay = ({ profile }: ProfileDisplayProps) => {
               <p className="font-medium text-gray-700">URL</p>
               <p className="text-sm text-gray-600 break-all">{profile.url}</p>
             </div>
-            <div>
-              <p className="font-medium text-gray-700">Análise de Headline</p>
-              <p className="text-gray-900">{profile.headline}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+            
+            {profile.Headline_feedback && (
               <div>
-                <p className="font-medium text-gray-700">Nota Certificados</p>
-                <p className="text-gray-900">{profile.recommendations}/5</p>
+                <p className="font-medium text-gray-700">Análise de Headline</p>
+                <p className="text-gray-900 mb-1">{profile.Headline_feedback}</p>
+                <p className="text-gray-900 font-bold">Nota: {profile.nota_headline}/5</p>
               </div>
+            )}
+            
+            {profile.Sobre_feedback && (
               <div>
-                <p className="font-medium text-gray-700">Nota Experiência</p>
-                <p className="text-gray-900">{profile.connections}</p>
+                <p className="font-medium text-gray-700">Análise do Sobre</p>
+                <p className="text-gray-900 mb-1">{profile.Sobre_feedback}</p>
+                <p className="text-gray-900 font-bold">Nota: {profile.nota_sobre}/5</p>
               </div>
-            </div>
+            )}
+            
+            {profile.Experiencias_feedback && (
+              <div>
+                <p className="font-medium text-gray-700">Análise de Experiências</p>
+                <p className="text-gray-900 mb-1">{profile.Experiencias_feedback}</p>
+                <p className="text-gray-900 font-bold">Nota: {profile.nota_experiencia}/5</p>
+              </div>
+            )}
+            
+            {profile.Projetos_feedback && (
+              <div>
+                <p className="font-medium text-gray-700">Análise de Projetos</p>
+                <p className="text-gray-900 mb-1">{profile.Projetos_feedback}</p>
+                <p className="text-gray-900 font-bold">Nota: {profile.nota_projetos}/5</p>
+              </div>
+            )}
+            
+            {profile.Certificados_feedback && (
+              <div>
+                <p className="font-medium text-gray-700">Análise de Certificados</p>
+                <p className="text-gray-900 mb-1">{profile.Certificados_feedback}</p>
+                <p className="text-gray-900 font-bold">Nota: {profile.nota_certificados}/5</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -69,18 +105,20 @@ const ProfileDisplay = ({ profile }: ProfileDisplayProps) => {
         </CardContent>
       </Card>
       
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Sugestões de Melhoria</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="list-disc pl-5 space-y-2">
-            {profile.suggestedImprovements.map((suggestion, index) => (
-              <li key={index} className="text-gray-700">{suggestion}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      {profile.suggestedImprovements && profile.suggestedImprovements.length > 0 && (
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>Sugestões de Melhoria</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-5 space-y-2">
+              {profile.suggestedImprovements.map((suggestion, index) => (
+                <li key={index} className="text-gray-700">{suggestion}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
       
       <div className="flex justify-center mt-8">
         <Button 
