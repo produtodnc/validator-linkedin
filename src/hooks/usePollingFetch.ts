@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { LinkedInProfile, fetchProfileData, ApiResponse } from "@/services/linkedinService";
+import { LinkedInProfile, fetchProfileData, ApiResponse, checkExternalEndpoint } from "@/services/linkedinService";
 import { useToast } from "@/hooks/use-toast";
 
 // Inicialize o objeto se ainda não existir
@@ -26,7 +26,51 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     try {
       console.log("[POLLING] Verificando dados para URL:", linkedinUrl);
       
-      // Primeiro verificamos se já recebemos os dados via POST simulado
+      // Verificar endpoint externo
+      const response = await checkExternalEndpoint(linkedinUrl);
+      
+      if (response.status === 200 && response.data) {
+        console.log("[POLLING] Dados encontrados no endpoint externo:", response.data);
+        
+        // Construir objeto de perfil com dados recebidos
+        const profileData: LinkedInProfile = {
+          url: linkedinUrl,
+          name: response.data.name || "Perfil LinkedIn",
+          headline: response.data.headline || "Análise de Perfil",
+          recommendations: response.data.recommendations || response.data.nota_certificados || 0,
+          connections: response.data.connections || (response.data.nota_experiencia ? response.data.nota_experiencia + "/5" : "N/A"),
+          completionScore: response.data.completionScore || Math.round(((response.data.nota_headline || 0) + 
+                                     (response.data.nota_sobre || 0) + 
+                                     (response.data.nota_experiencia || 0) + 
+                                     (response.data.nota_projetos || 0) + 
+                                     (response.data.nota_certificados || 0)) / 5 * 20),
+          suggestedImprovements: response.data.suggestedImprovements || [],
+          // Adicionando os campos brutos recebidos
+          Headline_feedback: response.data.Headline_feedback,
+          nota_headline: response.data.nota_headline,
+          Sobre_feedback: response.data.Sobre_feedback,
+          nota_sobre: response.data.nota_sobre,
+          Experiencias_feedback: response.data.Experiencias_feedback,
+          nota_experiencia: response.data.nota_experiencia,
+          Projetos_feedback: response.data.Projetos_feedback,
+          nota_projetos: response.data.nota_projetos,
+          Certificados_feedback: response.data.Certificados_feedback,
+          nota_certificados: response.data.nota_certificados
+        };
+        
+        setProfile(profileData);
+        setIsLoading(false);
+        setDataReceived(true);
+        
+        toast({
+          title: "Análise concluída",
+          description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
+        });
+        
+        return true; // Dados recebidos, pode parar o polling
+      }
+      
+      // Verificar armazenamento global
       if (window._receivedLinkedInData && window._receivedLinkedInData[linkedinUrl]) {
         console.log("[POLLING] Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
         
