@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-// Interface para dados simulados do perfil LinkedIn
+// Interface para dados do perfil LinkedIn
 interface LinkedInProfile {
   url: string;
   name: string;
@@ -29,6 +29,9 @@ const Results = () => {
   // Recupera a URL do LinkedIn do estado de navegação
   const linkedinUrl = location.state?.linkedinUrl || "";
   
+  // Endpoint para teste
+  const testEndpoint = "https://webhook.site/d8bb66ed-56a3-472c-9a21-2f39144edd01";
+  
   useEffect(() => {
     // Se não houver URL, redirecione para a página inicial
     if (!linkedinUrl) {
@@ -41,19 +44,27 @@ const Results = () => {
       return;
     }
     
-    // Simula uma chamada para um endpoint que busca os dados do perfil
+    // Busca os dados do perfil usando o endpoint de teste
     const fetchProfileData = async () => {
       setIsLoading(true);
       setIsError(false);
       
       try {
-        // Simulando tempo de processamento e chamada para um endpoint
-        const response = await fetch(`https://api.example.com/linkedin-validator?url=${encodeURIComponent(linkedinUrl)}`, { 
-          method: "GET",
-          // Este é um endpoint simulado, na implementação real você usaria um endpoint real
-          // Como estamos apenas simulando, vamos cancelar a chamada e usar dados fictícios
-          signal: AbortSignal.timeout(1500) 
+        // Enviando dados para o endpoint de teste
+        const response = await fetch(testEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            linkedinUrl,
+            requestTime: new Date().toISOString()
+          }),
         });
+
+        // Esperamos a resposta e tentamos obter dados - em um ambiente real,
+        // esta seria uma resposta verdadeira do seu backend
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Dados simulados (em um cenário real, viriam da resposta do endpoint)
         const mockData: LinkedInProfile = {
@@ -69,6 +80,19 @@ const Results = () => {
             "Solicite mais recomendações de colegas de trabalho"
           ]
         };
+        
+        // Enviando dados do perfil simulado para o endpoint
+        await fetch(testEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "profile_processed",
+            profile: mockData,
+            processTime: new Date().toISOString()
+          }),
+        });
         
         setProfile(mockData);
       } catch (error) {
