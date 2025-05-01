@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -8,13 +7,13 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { sendUrlToWebhook } from "@/services/linkedinService";
-
 const Home = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -27,13 +26,10 @@ const Home = () => {
       });
       return;
     }
-
     setIsLoading(true);
-    
     try {
       // Utilizando nossa função específica para enviar a URL para o webhook
       const response = await sendUrlToWebhook(linkedinUrl);
-      
       if (response.error) {
         toast({
           title: "Erro",
@@ -64,9 +60,7 @@ const Home = () => {
       setIsLoading(false);
     }
   };
-
-  return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
+  return <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
       <Header />
       
       <main className="flex-grow flex flex-col items-center justify-center px-4 bg-slate-100">
@@ -80,7 +74,7 @@ const Home = () => {
                 <div className="relative flex-grow">
                   <Input type="url" placeholder="https://www.linkedin.com/in/seu-perfil/" value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)} className="h-16 pr-16 pl-6 rounded-full shadow-lg w-full text-gray-700 bg-white" required />
                 </div>
-                <Button type="submit" className="absolute right-1 rounded-full w-14 h-14 bg-[#0A66C2] hover:bg-[#004182] flex items-center justify-center" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className="absolute right-1 rounded-full w-12 h-12 bg-[#0A66C2] hover:bg-[#004182] flex items-center justify-center">
                   {isLoading ? <span className="h-5 w-5 border-t-2 border-r-2 border-white rounded-full animate-spin" /> : <ArrowRight className="text-white" size={24} />}
                 </Button>
               </div>
@@ -90,8 +84,6 @@ const Home = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
