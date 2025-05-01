@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { LinkedInProfile, fetchProfileData, ApiResponse, checkExternalEndpoint } from "@/services/linkedinService";
+import { LinkedInProfile } from "@/services/linkedinService";
 import { useToast } from "@/hooks/use-toast";
 
 // Inicialize o objeto se ainda não existir
@@ -22,43 +22,25 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
   const [dataReceived, setDataReceived] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const checkEndpointForData = useCallback(async () => {
+  const checkForData = useCallback(async () => {
     try {
       console.log("[POLLING] Verificando dados para URL:", linkedinUrl);
       
-      // Verificar endpoint externo usando POST agora
-      const response = await checkExternalEndpoint(linkedinUrl);
+      // Enviando requisição POST para o endpoint simulado
+      const response = await fetch('/api/resultado', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ url: linkedinUrl })
+      });
       
-      if (response.status === 200 && response.data) {
-        console.log("[POLLING] Dados encontrados no endpoint externo:", response.data);
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[POLLING] Dados recebidos do endpoint simulado:", data);
         
-        // Construir objeto de perfil com dados recebidos
-        const profileData: LinkedInProfile = {
-          url: linkedinUrl,
-          name: response.data.name || "Perfil LinkedIn",
-          headline: response.data.headline || "Análise de Perfil",
-          recommendations: response.data.recommendations || response.data.nota_certificados || 0,
-          connections: response.data.connections || (response.data.nota_experiencia ? response.data.nota_experiencia + "/5" : "N/A"),
-          completionScore: response.data.completionScore || Math.round(((response.data.nota_headline || 0) + 
-                                     (response.data.nota_sobre || 0) + 
-                                     (response.data.nota_experiencia || 0) + 
-                                     (response.data.nota_projetos || 0) + 
-                                     (response.data.nota_certificados || 0)) / 5 * 20),
-          suggestedImprovements: response.data.suggestedImprovements || [],
-          // Adicionando os campos brutos recebidos
-          Headline_feedback: response.data.Headline_feedback,
-          nota_headline: response.data.nota_headline,
-          Sobre_feedback: response.data.Sobre_feedback,
-          nota_sobre: response.data.nota_sobre,
-          Experiencias_feedback: response.data.Experiencias_feedback,
-          nota_experiencia: response.data.nota_experiencia,
-          Projetos_feedback: response.data.Projetos_feedback,
-          nota_projetos: response.data.nota_projetos,
-          Certificados_feedback: response.data.Certificados_feedback,
-          nota_certificados: response.data.nota_certificados
-        };
-        
-        setProfile(profileData);
+        setProfile(data);
         setIsLoading(false);
         setDataReceived(true);
         
@@ -70,58 +52,13 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         return true; // Dados recebidos, pode parar o polling
       }
       
-      // Verificar armazenamento global
+      // Verificar se encontramos algo no armazenamento global
       if (window._receivedLinkedInData && window._receivedLinkedInData[linkedinUrl]) {
         console.log("[POLLING] Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
         
         const data = window._receivedLinkedInData[linkedinUrl];
         delete window._receivedLinkedInData[linkedinUrl]; // Limpamos para evitar duplicação
         
-        // Vamos usar diretamente os dados recebidos, preservando os campos brutos
-        const profileData: LinkedInProfile = {
-          url: linkedinUrl,
-          name: "Perfil LinkedIn",
-          headline: data.headline || "Análise de Headline",
-          recommendations: data.recommendations || data.nota_certificados || 0,
-          connections: data.connections || (data.nota_experiencia ? data.nota_experiencia + "/5" : "N/A"),
-          completionScore: data.completionScore || Math.round(((data.nota_headline || 0) + 
-                                     (data.nota_sobre || 0) + 
-                                     (data.nota_experiencia || 0) + 
-                                     (data.nota_projetos || 0) + 
-                                     (data.nota_certificados || 0)) / 5 * 20),
-          suggestedImprovements: data.suggestedImprovements || [],
-          // Adicionando os campos brutos recebidos no POST
-          Headline_feedback: data.Headline_feedback,
-          nota_headline: data.nota_headline,
-          Sobre_feedback: data.Sobre_feedback,
-          nota_sobre: data.nota_sobre,
-          Experiencias_feedback: data.Experiencias_feedback,
-          nota_experiencia: data.nota_experiencia,
-          Projetos_feedback: data.Projetos_feedback,
-          nota_projetos: data.nota_projetos,
-          Certificados_feedback: data.Certificados_feedback,
-          nota_certificados: data.nota_certificados
-        };
-        
-        console.log("[POLLING] Dados convertidos para o formato do perfil:", profileData);
-        setProfile(profileData);
-        setIsLoading(false);
-        setDataReceived(true);
-        
-        toast({
-          title: "Análise concluída",
-          description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
-        });
-
-        return true; // Dados recebidos, pode parar o polling
-      }
-      
-      // Caso contrário, tentamos o método padrão de busca
-      const data = await fetchProfileData(linkedinUrl);
-      
-      if (data) {
-        console.log("[POLLING] Dados encontrados via fetchProfileData:", data);
-        // Dados disponíveis
         setProfile(data);
         setIsLoading(false);
         setDataReceived(true);
@@ -136,7 +73,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
       
       return false; // Continuar polling
     } catch (error) {
-      console.error("Error fetching profile data:", error);
+      console.error("[POLLING] Erro verificando dados:", error);
       return false; // Continuar tentando
     }
   }, [linkedinUrl, toast]);
@@ -145,7 +82,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
   useEffect(() => {
     const handleEndpointData = (event: CustomEvent) => {
       if (event.detail?.url === linkedinUrl && event.detail?.status === 200) {
-        checkEndpointForData();
+        checkForData();
       } else if (event.detail?.error) {
         setIsError(true);
         setIsLoading(false);
@@ -163,7 +100,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     return () => {
       window.removeEventListener('endpointDataReceived', handleEndpointData as EventListener);
     };
-  }, [linkedinUrl, checkEndpointForData, toast]);
+  }, [linkedinUrl, checkForData, toast]);
 
   useEffect(() => {
     if (!linkedinUrl) {
@@ -176,7 +113,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     
     const startPolling = async () => {
       // Verificar imediatamente primeiro
-      const dataReceived = await checkEndpointForData();
+      const dataReceived = await checkForData();
       
       if (!dataReceived) {
         console.log("[POLLING] Iniciando polling para URL:", linkedinUrl);
@@ -184,7 +121,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         // Se ainda não há dados, começar polling
         pollingInterval = setInterval(async () => {
           console.log("[POLLING] Verificando novos dados...");
-          const received = await checkEndpointForData();
+          const received = await checkForData();
           if (received && pollingInterval) {
             clearInterval(pollingInterval);
           }
@@ -227,7 +164,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
       if (pollingInterval) clearInterval(pollingInterval);
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [linkedinUrl, checkEndpointForData, toast, isLoading]);
+  }, [linkedinUrl, checkForData, toast, isLoading]);
 
   return { isLoading, isError, profile, dataReceived };
 };

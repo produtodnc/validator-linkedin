@@ -51,13 +51,18 @@ export const setupEndpointListener = () => {
               }
               
               // Simula processamento de dados e resposta
-              const profileResponse = {
+              const profileResponse: LinkedInProfile = {
                 url: linkedinUrl,
                 name: "Perfil do LinkedIn",
                 headline: "Desenvolvedor Front-end",
                 recommendations: 5,
                 connections: "500+",
                 completionScore: 85,
+                suggestedImprovements: [
+                  "Melhore seu headline para destacar habilidades principais",
+                  "Adicione mais conquistas mensuráveis na seção 'Sobre'",
+                  "Inclua dados quantitativos nas suas experiências"
+                ],
                 nota_headline: 4,
                 nota_sobre: 4.5,
                 nota_experiencia: 3.8,
