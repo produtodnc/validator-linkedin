@@ -25,6 +25,7 @@ export interface LinkedInProfile {
 export interface ApiResponse {
   data: LinkedInProfile | null;
   error?: string;
+  status?: number;
 }
 
 // URL do webhook para enviar os dados
@@ -37,17 +38,23 @@ export const ourEndpointUrl = "/api/resultado";
 export const sendUrlToWebhook = async (linkedinUrl: string): Promise<void> => {
   try {
     console.log("Enviando URL para o webhook:", linkedinUrl);
-    await fetch(webhookUrl, {
+    
+    // Construa o objeto com os dados necessários para o webhook
+    const webhookData = {
+      linkedinUrl,
+      callbackUrl: window.location.origin + ourEndpointUrl,
+      requestTime: new Date().toISOString()
+    };
+    
+    console.log("Dados sendo enviados para o webhook:", webhookData);
+    
+    const response = await fetch(webhookUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       mode: "no-cors", // Para evitar erros de CORS
-      body: JSON.stringify({
-        linkedinUrl,
-        callbackUrl: window.location.origin + ourEndpointUrl,
-        requestTime: new Date().toISOString()
-      }),
+      body: JSON.stringify(webhookData),
     });
     
     console.log("URL do LinkedIn enviada para o webhook");

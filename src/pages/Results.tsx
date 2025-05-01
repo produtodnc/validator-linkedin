@@ -35,8 +35,14 @@ if (typeof window !== 'undefined' && !window._endpointListenerAdded) {
         
         // Recupera a URL atual do LinkedIn da sessão
         const currentProfileUrl = sessionStorage.getItem('currentProfileUrl');
-        if (currentProfileUrl && window._receivedLinkedInData) {
+        if (currentProfileUrl) {
           console.log("[ENDPOINT] Associando dados à URL:", currentProfileUrl);
+          
+          // Inicializa o objeto global se ainda não existir
+          if (!window._receivedLinkedInData) {
+            window._receivedLinkedInData = {};
+          }
+          
           window._receivedLinkedInData[currentProfileUrl] = body;
         }
         
@@ -44,7 +50,8 @@ if (typeof window !== 'undefined' && !window._endpointListenerAdded) {
         const customEvent = new CustomEvent('endpointDataReceived', { 
           detail: { 
             url: currentProfileUrl,
-            data: body
+            data: body,
+            status: 200
           } 
         });
         window.dispatchEvent(customEvent);
@@ -56,6 +63,16 @@ if (typeof window !== 'undefined' && !window._endpointListenerAdded) {
         }));
       } catch (error) {
         console.error("[ENDPOINT] Erro ao processar dados:", error);
+        
+        // Disparar evento personalizado para notificar que houve um erro
+        const customEvent = new CustomEvent('endpointDataReceived', { 
+          detail: { 
+            error: 'Erro ao processar dados',
+            status: 400
+          } 
+        });
+        window.dispatchEvent(customEvent);
+        
         // Simula uma resposta de erro
         return Promise.resolve(new Response(JSON.stringify({ error: 'Erro ao processar dados' }), {
           status: 400,
@@ -85,11 +102,21 @@ const Results = () => {
     // Listener para o evento personalizado
     const handleEndpointData = (event: CustomEvent) => {
       console.log("[RESULTS] Dados recebidos do endpoint:", event.detail);
-      setEndpointStatus(200);
-      toast({
-        title: "Sucesso",
-        description: "Os dados foram enviados com sucesso",
-      });
+      
+      if (event.detail.status === 200) {
+        setEndpointStatus(200);
+        toast({
+          title: "Sucesso",
+          description: "Os dados foram enviados com sucesso",
+        });
+      } else if (event.detail.status === 400) {
+        setEndpointStatus(400);
+        toast({
+          title: "Erro",
+          description: event.detail.error || "Ocorreu um erro ao processar os dados",
+          variant: "destructive",
+        });
+      }
     };
 
     window.addEventListener('endpointDataReceived', handleEndpointData as EventListener);
@@ -114,6 +141,10 @@ const Results = () => {
     const initializeProcess = async () => {
       try {
         await sendUrlToWebhook(linkedinUrl);
+        toast({
+          title: "Processando",
+          description: "A URL foi enviada para análise. Aguardando resultados...",
+        });
       } catch (error) {
         console.error("Erro ao iniciar o processo:", error);
         toast({
@@ -176,7 +207,7 @@ const Results = () => {
   );
 };
 
-// Adiciona a declaração global para o TypeScript - corrigindo o tipo para corresponder à usePollingFetch.ts
+// Adiciona a declaração global para o TypeScript
 declare global {
   interface Window {
     _endpointListenerAdded?: boolean;

@@ -3,28 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import { LinkedInProfile, fetchProfileData } from "@/services/linkedinService";
 import { useToast } from "@/hooks/use-toast";
 
-// Criamos um objeto global para simular nosso endpoint local
-// Em um cenário real, isso seria gerenciado por um servidor backend
-declare global {
-  interface Window {
-    _receivedLinkedInData?: {
-      [url: string]: LinkedInProfile;
-    };
-  }
-}
-
 // Inicialize o objeto se ainda não existir
 if (typeof window !== 'undefined') {
   window._receivedLinkedInData = window._receivedLinkedInData || {};
 }
-
-// Simula um endpoint local para receber dados POST
-export const handleEndpointPost = (linkedinUrl: string, data: LinkedInProfile): void => {
-  if (typeof window !== 'undefined') {
-    window._receivedLinkedInData![linkedinUrl] = data;
-    console.log(`[API] Dados recebidos para URL ${linkedinUrl}:`, data);
-  }
-};
 
 interface PollingFetchResult {
   isLoading: boolean;
@@ -118,8 +100,17 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
   // Ouvir o evento personalizado de dados recebidos
   useEffect(() => {
     const handleEndpointData = (event: CustomEvent) => {
-      if (event.detail?.url === linkedinUrl) {
+      if (event.detail?.url === linkedinUrl && event.detail?.status === 200) {
         checkEndpointForData();
+      } else if (event.detail?.error) {
+        setIsError(true);
+        setIsLoading(false);
+        
+        toast({
+          title: "Erro",
+          description: event.detail.error,
+          variant: "destructive",
+        });
       }
     };
 
@@ -128,7 +119,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     return () => {
       window.removeEventListener('endpointDataReceived', handleEndpointData as EventListener);
     };
-  }, [linkedinUrl, checkEndpointForData]);
+  }, [linkedinUrl, checkEndpointForData, toast]);
 
   useEffect(() => {
     if (!linkedinUrl) {
