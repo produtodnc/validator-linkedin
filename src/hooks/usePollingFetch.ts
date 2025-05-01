@@ -101,7 +101,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
           }
         }, 3000);
         
-        // Timeout após 30 segundos para evitar polling infinito
+        // Timeout após 120 segundos para evitar polling infinito (aumentado de 30 para 120 segundos)
         timeoutId = setTimeout(() => {
           if (pollingInterval) {
             clearInterval(pollingInterval);
@@ -117,7 +117,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
               variant: "destructive",
             });
           }
-        }, 30000);
+        }, 120000); // Aumentado para 120 segundos (2 minutos)
       }
     };
     
