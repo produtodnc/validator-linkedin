@@ -19,10 +19,12 @@ export interface ApiResponse {
 // URL do webhook para enviar os dados
 const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-bdfd-8dcc3d793964";
 
-// URL do nosso endpoint que receberá os dados processados
-// Este endpoint seria implementado em um servidor real
-// Para este exemplo, usaremos um endpoint de demonstração
-export const ourEndpointUrl = "https://webhook.site/d8bb66ed-56a3-472c-9a21-2f39144edd01";
+// URL do nosso endpoint local que receberá os dados processados
+export const ourEndpointUrl = "/api/resultado";
+
+// Variável para armazenar temporariamente dados recebidos via POST
+// Em uma aplicação real, você usaria um banco de dados ou outro mecanismo de persistência
+let receivedProfileData: LinkedInProfile | null = null;
 
 // Função para enviar a URL do LinkedIn para o webhook
 export const sendUrlToWebhook = async (linkedinUrl: string): Promise<void> => {
@@ -35,7 +37,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<void> => {
       mode: "no-cors", // Para evitar erros de CORS
       body: JSON.stringify({
         linkedinUrl,
-        callbackUrl: ourEndpointUrl,
+        callbackUrl: window.location.origin + ourEndpointUrl,
         requestTime: new Date().toISOString()
       }),
     });
@@ -47,16 +49,28 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<void> => {
   }
 };
 
-// Função para buscar os dados do endpoint
+// Função para receber dados via POST no endpoint local
+// Esta função seria normalmente implementada no servidor,
+// mas para este exemplo, vamos simular usando uma variável global
+export const receiveProfileData = (data: LinkedInProfile): void => {
+  receivedProfileData = data;
+  console.log("Dados do perfil recebidos:", data);
+};
+
+// Função para buscar os dados do endpoint local
 export const fetchProfileData = async (linkedinUrl: string): Promise<LinkedInProfile | null> => {
   try {
-    // Consulta nosso endpoint com a URL como parâmetro para identificar os dados específicos
-    await fetch(`${ourEndpointUrl}?url=${encodeURIComponent(linkedinUrl)}`);
+    // Em um cenário real, você faria uma requisição para o endpoint
+    // Como estamos em um ambiente de front-end, vamos simular o comportamento
     
-    // Como estamos usando um endpoint de demonstração, vamos simular a resposta
-    // Em um cenário real, aqui você iria verificar a resposta real do seu endpoint
+    // Verificar se já recebemos dados para esta URL
+    if (receivedProfileData && receivedProfileData.url === linkedinUrl) {
+      const data = receivedProfileData;
+      receivedProfileData = null; // Limpar após usar
+      return data;
+    }
     
-    // Simulando um tempo de processamento
+    // Simulando um tempo de processamento se não temos dados ainda
     const currentTime = new Date().getTime();
     const startTime = sessionStorage.getItem('processingStartTime');
     
