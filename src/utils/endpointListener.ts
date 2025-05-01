@@ -29,48 +29,89 @@ export const setupEndpointListener = () => {
     window.fetch = async function(input, init) {
       const url = input.toString();
       
-      // Intercept only POST calls to our endpoint
-      if (url.endsWith('/api/resultado') && init?.method === 'POST') {
-        console.log("[ENDPOINT] Recebendo dados no endpoint /api/resultado");
+      // Intercepta chamadas POST e GET para nosso endpoint
+      if (url.includes('/api/resultado')) {
+        console.log(`[ENDPOINT] Recebendo dados no endpoint /api/resultado via ${init?.method}`);
+        
         try {
-          const body = init.body ? JSON.parse(init.body.toString()) : {};
-          console.log("[ENDPOINT] Dados recebidos:", body);
-          
-          // Retrieve current LinkedIn URL from session
-          const currentProfileUrl = sessionStorage.getItem('currentProfileUrl');
-          if (currentProfileUrl) {
-            console.log("[ENDPOINT] Associando dados à URL:", currentProfileUrl);
+          if (init?.method === 'POST') {
+            // Corpo da requisição POST
+            const body = init.body ? JSON.parse(init.body.toString()) : {};
+            console.log("[ENDPOINT] Dados recebidos via POST:", body);
             
-            // Initialize global object if it doesn't exist
-            if (!window._receivedLinkedInData) {
-              window._receivedLinkedInData = {};
+            // Extrair URL do LinkedIn do corpo
+            const linkedinUrl = body.url || '';
+            
+            if (linkedinUrl) {
+              console.log("[ENDPOINT] Associando dados à URL:", linkedinUrl);
+              
+              // Inicializar objeto global se não existir
+              if (!window._receivedLinkedInData) {
+                window._receivedLinkedInData = {};
+              }
+              
+              // Simula processamento de dados
+              // Podemos usar os dados do corpo diretamente ou gerar simulados
+              window._receivedLinkedInData[linkedinUrl] = body.data || {
+                url: linkedinUrl,
+                name: "Perfil do LinkedIn",
+                headline: "Desenvolvedor Front-end",
+                recommendations: 5,
+                connections: "500+",
+                completionScore: 85,
+                nota_headline: 4,
+                nota_sobre: 4.5,
+                nota_experiencia: 3.8,
+                nota_projetos: 4.2,
+                nota_certificados: 3.5,
+                Headline_feedback: "Seu headline está bom, mas poderia destacar mais suas habilidades principais.",
+                Sobre_feedback: "Seção 'Sobre' bem escrita, mas considere adicionar mais conquistas mensuráveis.",
+                Experiencias_feedback: "Suas experiências estão bem descritas, mas faltam dados quantitativos.",
+                Projetos_feedback: "Bons projetos, considere adicionar links ou imagens.",
+                Certificados_feedback: "Certificados relevantes, mas alguns estão desatualizados."
+              };
             }
             
-            window._receivedLinkedInData[currentProfileUrl] = body;
+            // Aciona evento customizado para notificar que os dados foram recebidos
+            triggerEndpointEvent({
+              url: linkedinUrl,
+              data: window._receivedLinkedInData[linkedinUrl],
+              status: 200
+            });
+            
+            // Simula uma resposta de sucesso
+            return Promise.resolve(new Response(JSON.stringify({ success: true }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            }));
+          } else {
+            // Para chamadas GET, mantém o comportamento anterior
+            // Recupera URL atual do LinkedIn da sessão
+            const currentProfileUrl = sessionStorage.getItem('currentProfileUrl');
+            
+            if (currentProfileUrl && window._receivedLinkedInData && window._receivedLinkedInData[currentProfileUrl]) {
+              return Promise.resolve(new Response(JSON.stringify(window._receivedLinkedInData[currentProfileUrl]), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              }));
+            }
+            
+            // Se não encontrar dados, retorna erro
+            return Promise.resolve(new Response(JSON.stringify({ error: 'Dados não encontrados' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' }
+            }));
           }
-          
-          // Trigger custom event to notify data has been received
-          triggerEndpointEvent({
-            url: currentProfileUrl,
-            data: body,
-            status: 200
-          });
-          
-          // Simulate a success response
-          return Promise.resolve(new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-          }));
         } catch (error) {
           console.error("[ENDPOINT] Erro ao processar dados:", error);
           
-          // Trigger custom event to notify an error occurred
+          // Aciona evento customizado para notificar que ocorreu um erro
           triggerEndpointEvent({
             error: 'Erro ao processar dados',
             status: 400
           });
           
-          // Simulate an error response
+          // Simula uma resposta de erro
           return Promise.resolve(new Response(JSON.stringify({ error: 'Erro ao processar dados' }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
@@ -78,7 +119,7 @@ export const setupEndpointListener = () => {
         }
       }
       
-      // For all other calls, use the original fetch
+      // Para todas as outras chamadas, use o fetch original
       return originalFetch.apply(this, [input, init]);
     };
   }

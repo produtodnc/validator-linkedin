@@ -1,3 +1,4 @@
+
 // Interface para dados do perfil LinkedIn
 export interface LinkedInProfile {
   url: string;
@@ -25,7 +26,7 @@ export interface ApiResponse {
   data: LinkedInProfile | null;
   error?: string;
   status?: number;
-  message?: string; // Adicionando a propriedade message que faltava
+  message?: string; // Propriedade message incluída na interface
 }
 
 // URL do webhook para enviar os dados iniciais (apenas a URL do LinkedIn)
@@ -104,15 +105,14 @@ export const checkExternalEndpoint = async (linkedinUrl: string): Promise<ApiRes
   try {
     console.log("Verificando dados no endpoint externo para URL:", linkedinUrl);
     
-    // Adiciona a URL como query parameter para identificação
-    const url = `${ourEndpointUrl}?url=${encodeURIComponent(linkedinUrl)}`;
-    
-    const response = await fetch(url, {
-      method: "GET",
+    // Modificado para usar método POST em vez de GET
+    const response = await fetch(ourEndpointUrl, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json"
       },
+      body: JSON.stringify({ url: linkedinUrl }),
       // Removido o no-cors para poder acessar a resposta corretamente
     });
     

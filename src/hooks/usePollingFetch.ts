@@ -26,7 +26,7 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     try {
       console.log("[POLLING] Verificando dados para URL:", linkedinUrl);
       
-      // Verificar endpoint externo
+      // Verificar endpoint externo usando POST agora
       const response = await checkExternalEndpoint(linkedinUrl);
       
       if (response.status === 200 && response.data) {
