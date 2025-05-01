@@ -7,20 +7,20 @@ import NoDataState from "@/components/results/NoDataState";
 import ProfileDisplay from "@/components/results/ProfileDisplay";
 import { LinkedInProfile } from "@/services/linkedinService";
 
-interface ResultContentProps {
-  isLoading: boolean;
-  isError: boolean;
-  profile: LinkedInProfile | null;
-  dataReceived: boolean;
-  endpointStatus: number | null;
+export interface ResultContentProps {
+  isLoading?: boolean;
+  isError?: boolean;
+  profile?: LinkedInProfile | null;
+  dataReceived?: boolean;
+  endpointStatus?: number | null;
 }
 
 const ResultContent: React.FC<ResultContentProps> = ({
-  isLoading,
-  isError,
-  profile,
-  dataReceived,
-  endpointStatus
+  isLoading = true,
+  isError = false,
+  profile = null,
+  dataReceived = false,
+  endpointStatus = null
 }) => {
   
   if (isLoading) {

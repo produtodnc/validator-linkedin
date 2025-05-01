@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendUrlToWebhook } from "@/services/linkedinService";
 import { usePollingFetch } from "@/hooks/usePollingFetch";
 import { EndpointEventDetail } from "@/utils/endpointListener";
+import { ResultContentProps } from "@/components/results/ResultContent";
 
 interface ResultsContainerProps {
   linkedinUrl: string;
@@ -94,13 +95,16 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
     };
   }, [linkedinUrl, navigate, toast]);
   
-  return React.cloneElement(children as React.ReactElement, {
+  // Make sure we provide the content props that ResultContent expects
+  const contentProps: ResultContentProps = {
     isLoading,
     isError,
     profile,
     dataReceived,
     endpointStatus
-  });
+  };
+  
+  return React.cloneElement(children as React.ReactElement, contentProps);
 };
 
 export default ResultsContainer;
