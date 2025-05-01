@@ -10,6 +10,7 @@ import NoDataState from "@/components/results/NoDataState";
 import ProfileDisplay from "@/components/results/ProfileDisplay";
 import { sendUrlToWebhook } from "@/services/linkedinService";
 import { usePollingFetch } from "@/hooks/usePollingFetch";
+import { LinkedInProfile } from "@/services/linkedinService";
 
 // Este componente recebe dados via POST
 // Para fins de exemplo e teste, adicionamos um listener a seguir:
@@ -137,12 +138,12 @@ const Results = () => {
   );
 };
 
-// Adiciona a declaração global para o TypeScript
+// Adiciona a declaração global para o TypeScript - corrigindo o tipo para corresponder à usePollingFetch.ts
 declare global {
   interface Window {
     _endpointListenerAdded?: boolean;
     _receivedLinkedInData?: {
-      [url: string]: any;
+      [url: string]: LinkedInProfile;
     };
   }
 }
