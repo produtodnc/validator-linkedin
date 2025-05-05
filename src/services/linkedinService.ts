@@ -1,5 +1,7 @@
 
-// Interface para o perfil do LinkedIn
+import { supabase } from "@/integrations/supabase/client";
+
+// Interface para dados do perfil LinkedIn
 export interface LinkedInProfile {
   url: string;
   name?: string;
@@ -7,21 +9,8 @@ export interface LinkedInProfile {
   recommendations?: number;
   connections?: string;
   completionScore: number;
-  suggestedImprovements?: string[];
-  
-  // Campos específicos de feedback
-  feedback_headline?: string;
-  feedback_headline_nota?: number;
-  feedback_sobre?: string;
-  feedback_sobre_nota?: number;
-  feedback_experience?: string;
-  feedback_experience_nota?: number;
-  feedback_projetos?: string;
-  feedback_projetos_nota?: number;
-  feedback_certificados?: string;
-  feedback_certificados_nota?: number;
-  
-  // Compatibilidade com o formato antigo
+  suggestedImprovements: string[];
+  // Campos adicionais para os dados de feedback (formato antigo)
   Headline_feedback?: string;
   nota_headline?: number;
   Sobre_feedback?: string;
@@ -32,63 +21,141 @@ export interface LinkedInProfile {
   nota_projetos?: number;
   Certificados_feedback?: string;
   nota_certificados?: number;
-  
-  // Outros campos que podem vir da API
+  // Campos do banco de dados (formato novo)
   linkedin_url?: string;
-  [key: string]: any;
+  feedback_headline?: string;
+  feedback_headline_nota?: number;
+  feedback_sobre?: string;
+  feedback_sobre_nota?: number;
+  feedback_experience?: string;
+  feedback_experience_nota?: number;
+  feedback_projetos?: string;
+  feedback_projetos_nota?: number;
+  feedback_certificados?: string;
+  feedback_certificados_nota?: number;
 }
 
-// Esta função simula a chamada para a API do LinkedIn que retornaria o perfil
-export const fetchLinkedInProfile = async (linkedinUrl: string): Promise<LinkedInProfile> => {
-  // Simula uma chamada à API
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        url: linkedinUrl,
-        name: "Usuário Exemplo",
-        headline: "Desenvolvedor Full Stack",
-        recommendations: 5,
-        connections: "500+",
-        completionScore: 75,
-        feedback_headline: "Seu headline está bom mas poderia ser mais específico.",
-        feedback_headline_nota: 4,
-        feedback_sobre: "Sua seção 'Sobre' precisa de mais detalhes sobre suas realizações.",
-        feedback_sobre_nota: 3,
-        feedback_experience: "Suas experiências estão bem descritas, mas faltam métricas de impacto.",
-        feedback_experience_nota: 4,
-        feedback_projetos: "Adicione mais detalhes sobre seus projetos pessoais.",
-        feedback_projetos_nota: 3,
-        feedback_certificados: "Suas certificações são relevantes para sua área.",
-        feedback_certificados_nota: 5,
-        suggestedImprovements: [
-          "Adicionar mais detalhes sobre projetos",
-          "Incluir métricas de impacto nas experiências",
-          "Tornar o headline mais específico"
-        ]
-      });
-    }, 1500);
-  });
-};
+// Interface para resposta da API
+export interface ApiResponse {
+  data: LinkedInProfile | null;
+  error?: string;
+  status?: number;
+  message?: string;
+  recordId?: string; // Add recordId to the response interface
+}
 
-/**
- * Envia a URL do LinkedIn para um webhook
- * Atualmente é uma função simulada que retorna um ID de registro
- */
-export const sendUrlToWebhook = async (linkedinUrl: string) => {
-  console.log("Enviando URL para webhook:", linkedinUrl);
-  
-  // Simula uma chamada de API com um pequeno delay
-  return new Promise<{ recordId?: string; error?: string }>((resolve) => {
-    // Validação simples da URL
-    if (!linkedinUrl.includes("linkedin.com/")) {
-      resolve({ error: "URL inválida do LinkedIn" });
-      return;
+// URL do webhook para enviar os dados iniciais (apenas a URL do LinkedIn)
+const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-bdfd-8dcc3d793964";
+
+// Função para enviar a URL do LinkedIn e o ID gerado para o webhook
+export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse> => {
+  try {
+    console.log("[LINKEDIN_SERVICE] Processando URL do LinkedIn:", linkedinUrl);
+    
+    // Primeiro, salva a URL no banco de dados para obter um ID
+    const { data: insertedData, error: insertError } = await supabase
+      .from('linkedin_links')
+      .insert({
+        linkedin_url: linkedinUrl
+      })
+      .select()
+      .single();
+    
+    if (insertError) {
+      console.error("[LINKEDIN_SERVICE] Erro ao salvar URL no banco de dados:", insertError);
+      return { 
+        data: null, 
+        error: `Erro ao salvar URL: ${insertError.message}`,
+        status: 500
+      };
     }
     
-    setTimeout(() => {
-      // Gera um ID aleatório para simular o registro
-      const recordId = `rec_${Math.random().toString(36).substring(2, 10)}`;
-      resolve({ recordId });
-    }, 800);
-  });
+    const recordId = insertedData.id;
+    console.log("[LINKEDIN_SERVICE] URL salva no banco com ID:", recordId);
+    
+    // Armazenar o ID no sessionStorage para garantir consistência
+    sessionStorage.setItem(`recordId_${linkedinUrl}`, recordId);
+    console.log("[LINKEDIN_SERVICE] ID armazenado no sessionStorage:", recordId);
+    
+    // Agora tenta enviar o ID e a URL para o webhook
+    try {
+      console.log("[LINKEDIN_SERVICE] Enviando URL e ID para o webhook:", linkedinUrl, recordId);
+      
+      // Enviamos a URL do LinkedIn, o ID do registro e uma referência de tempo
+      const webhookData = {
+        linkedinUrl,
+        recordId,
+        requestTime: new Date().toISOString()
+      };
+      
+      console.log("[LINKEDIN_SERVICE] Dados sendo enviados para o webhook:", webhookData);
+      
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(webhookData),
+      });
+      
+      console.log("[LINKEDIN_SERVICE] Status da resposta do webhook:", response.status);
+      
+      // Verificar a resposta
+      if (response.ok) {
+        // Se conseguiu enviar para o webhook, ótimo
+        try {
+          const responseData = await response.json();
+          console.log("[LINKEDIN_SERVICE] Resposta do webhook:", responseData);
+          return { 
+            data: null, 
+            status: response.status,
+            recordId: recordId,
+            message: responseData.message || "URL enviada com sucesso"
+          };
+        } catch (e) {
+          console.log("[LINKEDIN_SERVICE] Webhook respondeu com sucesso, mas sem dados JSON");
+          return { 
+            data: null, 
+            status: response.status,
+            recordId: recordId,
+            message: "URL enviada com sucesso, sem dados retornados"
+          };
+        }
+      } else {
+        // Se o webhook falhou, mas temos o ID do registro, continuamos mesmo assim
+        console.log("[LINKEDIN_SERVICE] Webhook falhou, mas vamos continuar com o ID do registro:", recordId);
+        
+        // Captura o erro do webhook para log, mas não interrompe o fluxo
+        try {
+          const errorData = await response.text();
+          console.error("[LINKEDIN_SERVICE] Erro do webhook (ignorado):", errorData);
+        } catch (e) {
+          console.error("[LINKEDIN_SERVICE] Não foi possível ler o erro do webhook:", e);
+        }
+        
+        // Retorna sucesso mesmo assim, pois o importante é ter o ID do registro
+        return {
+          data: null,
+          recordId: recordId,
+          message: "URL registrada com sucesso. O webhook falhou, mas o processo continuará."
+        };
+      }
+    } catch (webhookError) {
+      // Se o webhook falhou completamente, mas temos o ID do registro, continuamos mesmo assim
+      console.error("[LINKEDIN_SERVICE] Erro ao chamar webhook (ignorado):", webhookError);
+      
+      return {
+        data: null,
+        recordId: recordId,
+        message: "URL registrada com sucesso. O webhook não pôde ser chamado, mas o processo continuará."
+      };
+    }
+  } catch (error) {
+    console.error("[LINKEDIN_SERVICE] Erro ao processar a requisição:", error);
+    return { 
+      data: null, 
+      error: String(error), 
+      status: 500 
+    };
+  }
 };
