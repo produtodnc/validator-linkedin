@@ -41,11 +41,11 @@ const ResultContent: React.FC<ResultContentProps> = ({
   // Se chegamos aqui, temos dados para exibir
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div className="md:col-span-1 bg-white rounded-lg shadow-md p-6">
+      <div className="md:col-span-1 bg-white rounded-lg shadow-md p-6 border border-solid border-gray-200">
         <ProfileScoreDisplay profile={profile} />
       </div>
       
-      <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+      <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6 border border-solid border-gray-200">
         <FeedbackDisplay profile={profile} />
       </div>
     </div>
