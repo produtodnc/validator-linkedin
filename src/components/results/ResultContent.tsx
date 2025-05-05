@@ -34,27 +34,24 @@ const ResultContent: React.FC<ResultContentProps> = ({
     return <ErrorState />;
   }
   
-  if (!dataReceived) {
-    return <NoDataState message={`Não foi possível encontrar dados após múltiplas consultas. Por favor, tente novamente mais tarde.`} />;
+  if (!dataReceived || !profile) {
+    return <NoDataState message={`Não foi possível encontrar dados completos após múltiplas consultas. Por favor, verifique se sua URL do LinkedIn está correta e tente novamente mais tarde.`} />;
   }
   
-  if (profile) {
-    return (
-      <>
-        {endpointStatus === 200 && (
-          <Alert className="mb-6 bg-green-50">
-            <AlertTitle>Sucesso!</AlertTitle>
-            <AlertDescription>
-              Os dados foram recebidos com sucesso e estão sendo exibidos abaixo.
-            </AlertDescription>
-          </Alert>
-        )}
-        <ProfileDisplay profile={profile} />
-      </>
-    );
-  }
-  
-  return <NoDataState />;
+  // Se chegamos aqui, temos dados para exibir
+  return (
+    <>
+      {endpointStatus === 200 && (
+        <Alert className="mb-6 bg-green-50">
+          <AlertTitle>Sucesso!</AlertTitle>
+          <AlertDescription>
+            Os dados foram recebidos com sucesso e estão sendo exibidos abaixo.
+          </AlertDescription>
+        </Alert>
+      )}
+      <ProfileDisplay profile={profile} />
+    </>
+  );
 };
 
 export default ResultContent;

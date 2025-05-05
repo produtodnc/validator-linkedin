@@ -176,11 +176,38 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
           
           return true; // Dados encontrados
         } else {
+          // Se estivermos na última tentativa, finalize o loading e mostre o estado "sem dados"
+          // mas não defina como erro
+          if (attempt >= 7) { // 4 iniciais + 3 adicionais
+            console.log("[PROFILE_DATA] Após todas as tentativas, dados insuficientes. Mostrando mensagem de 'sem dados'.");
+            setIsLoading(false);
+            setDataReceived(false); // Marcar explicitamente como sem dados
+            
+            toast({
+              title: "Análise incompleta",
+              description: "Não conseguimos obter dados suficientes para análise completa",
+              variant: "destructive",
+            });
+          }
+          
           console.log("[PROFILE_DATA] Dados encontrados, mas não são suficientes.");
           return false; // Dados insuficientes
         }
       } else {
         console.log(`[PROFILE_DATA] Nenhum dado encontrado para o ID na tentativa ${attempt}:`, id);
+        
+        // Se for a última tentativa de todas, mostrar estado "sem dados"
+        if (attempt >= 7) { // 4 iniciais + 3 adicionais
+          setIsLoading(false);
+          setDataReceived(false);
+          
+          toast({
+            title: "Sem dados",
+            description: "Não conseguimos recuperar os dados do perfil após várias tentativas",
+            variant: "destructive",
+          });
+        }
+        
         return false; // Nenhum dado
       }
     } catch (error) {
