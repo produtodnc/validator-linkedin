@@ -1,9 +1,9 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ResultContent from "@/components/results/ResultContent";
+import CurriculumValidator from "@/components/results/CurriculumValidator";
 import ResultsContainer from "@/components/results/ResultsContainer";
 
 const Results = () => {
@@ -16,13 +16,10 @@ const Results = () => {
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
       <Header />
       
-      <main className="flex-grow flex flex-col items-center justify-center px-4 py-12">
-        <div className="max-w-4xl w-full">
-          <h1 className="text-4xl font-bold mb-8 text-center text-[#1A1F2C]">Resultados da Validação</h1>
-          
+      <main className="flex-grow px-4 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto w-full">
           <ResultsContainer linkedinUrl={linkedinUrl}>
-            {/* We don't need to pass props here, ResultsContainer will inject them via cloneElement */}
-            <ResultContent />
+            <CurriculumValidator />
           </ResultsContainer>
         </div>
       </main>
