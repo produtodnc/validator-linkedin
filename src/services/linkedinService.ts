@@ -69,3 +69,26 @@ export const fetchLinkedInProfile = async (linkedinUrl: string): Promise<LinkedI
     }, 1500);
   });
 };
+
+/**
+ * Envia a URL do LinkedIn para um webhook
+ * Atualmente é uma função simulada que retorna um ID de registro
+ */
+export const sendUrlToWebhook = async (linkedinUrl: string) => {
+  console.log("Enviando URL para webhook:", linkedinUrl);
+  
+  // Simula uma chamada de API com um pequeno delay
+  return new Promise<{ recordId?: string; error?: string }>((resolve) => {
+    // Validação simples da URL
+    if (!linkedinUrl.includes("linkedin.com/")) {
+      resolve({ error: "URL inválida do LinkedIn" });
+      return;
+    }
+    
+    setTimeout(() => {
+      // Gera um ID aleatório para simular o registro
+      const recordId = `rec_${Math.random().toString(36).substring(2, 10)}`;
+      resolve({ recordId });
+    }, 800);
+  });
+};
