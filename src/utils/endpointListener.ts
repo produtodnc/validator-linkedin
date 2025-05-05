@@ -50,44 +50,21 @@ export const setupEndpointListener = () => {
                 window._receivedLinkedInData = {};
               }
               
-              // Simula processamento de dados e resposta
-              const profileResponse: LinkedInProfile = {
-                url: linkedinUrl,
-                name: "Perfil do LinkedIn",
-                headline: "Desenvolvedor Front-end",
-                recommendations: 5,
-                connections: "500+",
-                completionScore: 85,
-                suggestedImprovements: [
-                  "Melhore seu headline para destacar habilidades principais",
-                  "Adicione mais conquistas mensuráveis na seção 'Sobre'",
-                  "Inclua dados quantitativos nas suas experiências"
-                ],
-                nota_headline: 4,
-                nota_sobre: 4.5,
-                nota_experiencia: 3.8,
-                nota_projetos: 4.2,
-                nota_certificados: 3.5,
-                Headline_feedback: "Seu headline está bom, mas poderia destacar mais suas habilidades principais.",
-                Sobre_feedback: "Seção 'Sobre' bem escrita, mas considere adicionar mais conquistas mensuráveis.",
-                Experiencias_feedback: "Suas experiências estão bem descritas, mas faltam dados quantitativos.",
-                Projetos_feedback: "Bons projetos, considere adicionar links ou imagens.",
-                Certificados_feedback: "Certificados relevantes, mas alguns estão desatualizados."
-              };
+              // Verificar se já temos dados reais no armazenamento global
+              if (window._receivedLinkedInData[linkedinUrl]) {
+                // Retornar os dados já armazenados
+                return Promise.resolve(new Response(JSON.stringify(window._receivedLinkedInData[linkedinUrl]), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json' }
+                }));
+              }
               
-              // Armazena os dados para uso posterior
-              window._receivedLinkedInData[linkedinUrl] = profileResponse;
-              
-              // Aciona evento customizado para notificar que os dados foram recebidos
-              triggerEndpointEvent({
-                url: linkedinUrl,
-                data: profileResponse,
-                status: 200
-              });
-              
-              // Simula uma resposta de sucesso com os mesmos dados
-              return Promise.resolve(new Response(JSON.stringify(profileResponse), {
-                status: 200,
+              // Caso não tenhamos dados reais, informamos que os dados ainda estão sendo processados
+              return Promise.resolve(new Response(JSON.stringify({ 
+                message: "Dados ainda estão sendo processados. Por favor, aguarde.", 
+                processing: true 
+              }), {
+                status: 202,
                 headers: { 'Content-Type': 'application/json' }
               }));
             }

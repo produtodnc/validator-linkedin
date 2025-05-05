@@ -35,35 +35,21 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     
     // Verifica se o dado existe e os campos obrigatórios estão preenchidos
     return requiredFields.every(field => {
-      // Verifica o novo formato dos campos
-      if (data[field as keyof LinkedInProfile]) {
-        return true;
-      }
-      
-      // Verifica o formato antigo dos campos (para compatibilidade)
-      const oldFormatMapping: {[key: string]: string} = {
-        'feedback_headline': 'Headline_feedback',
-        'feedback_headline_nota': 'nota_headline',
-        'feedback_sobre': 'Sobre_feedback',
-        'feedback_sobre_nota': 'nota_sobre',
-        'feedback_experience': 'Experiencias_feedback',
-        'feedback_experience_nota': 'nota_experiencia',
-        'feedback_projetos': 'Projetos_feedback',
-        'feedback_projetos_nota': 'nota_projetos',
-        'feedback_certificados': 'Certificados_feedback',
-        'feedback_certificados_nota': 'nota_certificados'
-      };
-      
-      const oldField = oldFormatMapping[field];
-      return oldField && data[oldField as keyof LinkedInProfile];
+      return !!data[field as keyof LinkedInProfile];
     });
+  };
+
+  // Verifica se os dados são reais (não mockados)
+  const isRealData = (data: LinkedInProfile): boolean => {
+    // Se os dados foram realmente preenchidos pelo back-end, eles terão uma propriedade url que corresponde ao linkedinUrl
+    return data.url === linkedinUrl;
   };
 
   const checkForData = useCallback(async () => {
     try {
       console.log("[POLLING] Verificando dados para URL:", linkedinUrl);
       
-      // Enviando requisição POST para o endpoint simulado
+      // Enviando requisição POST para o endpoint
       const response = await fetch('/api/resultado', {
         method: 'POST',
         headers: {
@@ -75,7 +61,13 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
       
       if (response.ok) {
         const data = await response.json();
-        console.log("[POLLING] Dados recebidos do endpoint simulado:", data);
+        console.log("[POLLING] Dados recebidos do endpoint:", data);
+        
+        // Verificar se são dados reais e não mockados
+        if (!isRealData(data)) {
+          console.log("[POLLING] Dados mockados detectados, aguardando dados reais");
+          return false; // Continuar polling pois são dados mockados
+        }
         
         // Verificar se todos os campos de feedback estão preenchidos
         if (areAllFieldsFilled(data)) {
@@ -100,6 +92,12 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         console.log("[POLLING] Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
         
         const data = window._receivedLinkedInData[linkedinUrl];
+        
+        // Verificar se são dados reais e não mockados
+        if (!isRealData(data)) {
+          console.log("[POLLING] Dados mockados detectados no armazenamento global, aguardando dados reais");
+          return false; // Continuar polling pois são dados mockados
+        }
         
         // Verificar se todos os campos de feedback estão preenchidos
         if (areAllFieldsFilled(data)) {
