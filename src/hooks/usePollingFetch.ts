@@ -53,27 +53,36 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
     
     const startPolling = async () => {
       // Check immediately first
-      const dataReceived = await checkForData();
+      const initialDataReceived = await checkForData();
       
-      if (!dataReceived) {
+      if (!initialDataReceived) {
         console.log("[POLLING] Iniciando polling para URL:", linkedinUrl);
         
         // If there's no data yet, start polling
         pollingInterval = setInterval(async () => {
           console.log("[POLLING] Verificando novos dados...");
           const received = await checkForData();
-          if (received && pollingInterval) {
-            clearInterval(pollingInterval);
+          
+          // If we received complete data, stop polling
+          if (received) {
+            if (pollingInterval) {
+              clearInterval(pollingInterval);
+            }
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
+            console.log("[POLLING] Dados completos recebidos. Parando polling.");
           }
         }, 3000); // Check every 3 seconds
         
-        // Increase timeout to 5 minutes (300 seconds) to give more time
+        // Set a timeout to stop polling after 5 minutes if data isn't received
         timeoutId = setTimeout(() => {
           if (pollingInterval) {
             clearInterval(pollingInterval);
           }
           
           if (isLoading) {
+            console.log("[POLLING] Timeout de 5 minutos atingido. Parando polling.");
             setIsError(true);
             setIsLoading(false);
             
@@ -84,6 +93,8 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
             });
           }
         }, 300000); // 300 seconds (5 minutes)
+      } else {
+        console.log("[POLLING] Dados completos já disponíveis inicialmente.");
       }
     };
     

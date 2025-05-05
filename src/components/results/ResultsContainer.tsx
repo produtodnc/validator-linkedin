@@ -17,7 +17,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
   const { toast } = useToast();
   const [endpointStatus, setEndpointStatus] = useState<number | null>(null);
   
-  // Use polling hook to fetch data
+  // Use polling hook to fetch data with the specific LinkedIn URL
   const { isLoading, isError, profile, dataReceived } = usePollingFetch(linkedinUrl);
   
   useEffect(() => {
@@ -25,19 +25,24 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
     const handleEndpointData = (event: CustomEvent<EndpointEventDetail>) => {
       console.log("[RESULTS] Dados recebidos do endpoint:", event.detail);
       
-      if (event.detail.status === 200) {
-        setEndpointStatus(200);
-        toast({
-          title: "Sucesso",
-          description: "Os dados foram enviados com sucesso",
-        });
-      } else if (event.detail.status === 400) {
-        setEndpointStatus(400);
-        toast({
-          title: "Erro",
-          description: event.detail.error || "Ocorreu um erro ao processar os dados",
-          variant: "destructive",
-        });
+      // Verify that this data is for the current URL being requested
+      if (event.detail.url === linkedinUrl) {
+        if (event.detail.status === 200) {
+          setEndpointStatus(200);
+          toast({
+            title: "Sucesso",
+            description: "Os dados foram enviados com sucesso",
+          });
+        } else if (event.detail.status === 400) {
+          setEndpointStatus(400);
+          toast({
+            title: "Erro",
+            description: event.detail.error || "Ocorreu um erro ao processar os dados",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.log("[RESULTS] Dados recebidos não correspondem à URL atual:", event.detail.url, linkedinUrl);
       }
     };
 

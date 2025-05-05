@@ -27,3 +27,11 @@ export const isRealData = (data: LinkedInProfile, linkedinUrl: string): boolean 
   // If data is actually filled by the backend, it will have a URL property matching linkedinUrl
   return data.url === linkedinUrl;
 };
+
+/**
+ * Checks if the data corresponds to the expected LinkedIn URL/ID
+ */
+export const isCorrectProfileData = (data: LinkedInProfile, linkedinUrl: string): boolean => {
+  // Ensure data exists and URL matches the requested LinkedIn URL
+  return !!data && data.url === linkedinUrl;
+};

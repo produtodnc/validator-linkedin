@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { LinkedInProfile } from "@/services/linkedinService";
-import { areAllFieldsFilled, isRealData } from "@/utils/profileDataValidation";
+import { areAllFieldsFilled, isRealData, isCorrectProfileData } from "@/utils/profileDataValidation";
 import { useToast } from "@/hooks/use-toast";
 
 // Initialize the object if it doesn't exist yet
@@ -44,6 +44,12 @@ export const useProfileDataCheck = (linkedinUrl: string) => {
         const data = await response.json();
         console.log("[POLLING] Dados recebidos do endpoint:", data);
         
+        // Check if data corresponds to the correct profile
+        if (!isCorrectProfileData(data, linkedinUrl)) {
+          console.log("[POLLING] Dados recebidos não correspondem ao perfil solicitado:", linkedinUrl);
+          return false; // Continue polling because the data is not for this profile
+        }
+        
         // Check if data is real and not mocked
         if (!isRealData(data, linkedinUrl)) {
           console.log("[POLLING] Dados mockados detectados, aguardando dados reais");
@@ -72,6 +78,12 @@ export const useProfileDataCheck = (linkedinUrl: string) => {
         console.log("[POLLING] Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
         
         const data = window._receivedLinkedInData[linkedinUrl];
+        
+        // Check if data corresponds to the correct profile
+        if (!isCorrectProfileData(data, linkedinUrl)) {
+          console.log("[POLLING] Dados no armazenamento global não correspondem ao perfil solicitado:", linkedinUrl);
+          return false; // Continue polling because the data is not for this profile
+        }
         
         // Check if data is real and not mocked
         if (!isRealData(data, linkedinUrl)) {
