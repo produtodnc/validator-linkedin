@@ -120,6 +120,33 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_links: {
+        Row: {
+          created_at: string
+          id: string
+          linkedin_url: string
+          response_message: string | null
+          response_status: number | null
+          webhook_sent: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linkedin_url: string
+          response_message?: string | null
+          response_status?: number | null
+          webhook_sent?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linkedin_url?: string
+          response_message?: string | null
+          response_status?: number | null
+          webhook_sent?: boolean | null
+        }
+        Relationships: []
+      }
       n8n_chat_histories: {
         Row: {
           id: number

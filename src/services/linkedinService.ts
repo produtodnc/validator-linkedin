@@ -1,4 +1,6 @@
 
+import { supabase } from "@/integrations/supabase/client";
+
 // Interface para dados do perfil LinkedIn
 export interface LinkedInProfile {
   url: string;
@@ -32,14 +34,40 @@ export interface ApiResponse {
 // URL do webhook para enviar os dados iniciais (apenas a URL do LinkedIn)
 const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-bdfd-8dcc3d793964";
 
-// Função para enviar APENAS a URL do LinkedIn para o webhook
+// Função para enviar a URL do LinkedIn e o ID gerado para o webhook
 export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse> => {
   try {
-    console.log("Enviando URL para o webhook:", linkedinUrl);
+    console.log("Processando URL do LinkedIn:", linkedinUrl);
     
-    // Enviamos apenas a URL do LinkedIn e uma referência para nosso endpoint
+    // Primeiro, salva a URL no banco de dados para obter um ID
+    const { data: insertedData, error: insertError } = await supabase
+      .from('linkedin_links')
+      .insert({
+        linkedin_url: linkedinUrl,
+        webhook_sent: false
+      })
+      .select()
+      .single();
+    
+    if (insertError) {
+      console.error("Erro ao salvar URL no banco de dados:", insertError);
+      return { 
+        data: null, 
+        error: `Erro ao salvar URL: ${insertError.message}`,
+        status: 500
+      };
+    }
+    
+    const recordId = insertedData.id;
+    console.log("URL salva no banco com ID:", recordId);
+    
+    // Agora envia o ID e a URL para o webhook
+    console.log("Enviando URL e ID para o webhook:", linkedinUrl, recordId);
+    
+    // Enviamos a URL do LinkedIn, o ID do registro e uma referência de tempo
     const webhookData = {
       linkedinUrl,
+      recordId,
       requestTime: new Date().toISOString()
     };
     
@@ -50,11 +78,20 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       headers: {
         "Content-Type": "application/json",
       },
-      // Removido o no-cors para poder acessar a resposta corretamente
       body: JSON.stringify(webhookData),
     });
     
     console.log("Status da resposta do webhook:", response.status);
+    
+    // Atualiza o registro no banco de dados com o status da resposta
+    await supabase
+      .from('linkedin_links')
+      .update({
+        webhook_sent: true,
+        response_status: response.status,
+        response_message: response.statusText
+      })
+      .eq('id', recordId);
     
     // Verificar a resposta adequadamente
     if (!response.ok) {
@@ -86,7 +123,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       };
     }
   } catch (error) {
-    console.error("Erro ao enviar URL para o webhook:", error);
+    console.error("Erro ao processar a requisição:", error);
     return { 
       data: null, 
       error: String(error), 
