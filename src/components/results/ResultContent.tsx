@@ -4,7 +4,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import LoadingState from "@/components/results/LoadingState";
 import ErrorState from "@/components/results/ErrorState";
 import NoDataState from "@/components/results/NoDataState";
-import ProfileDisplay from "@/components/results/ProfileDisplay";
+import ProfileScoreDisplay from "@/components/results/ProfileScoreDisplay";
 import { LinkedInProfile } from "@/services/linkedinService";
 
 export interface ResultContentProps {
@@ -49,7 +49,7 @@ const ResultContent: React.FC<ResultContentProps> = ({
           </AlertDescription>
         </Alert>
       )}
-      <ProfileDisplay profile={profile} />
+      <ProfileScoreDisplay profile={profile} />
     </>
   );
 };
