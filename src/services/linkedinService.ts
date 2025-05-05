@@ -44,8 +44,8 @@ export interface ApiResponse {
   recordId?: string; // Add recordId to the response interface
 }
 
-// URL do webhook para enviar os dados iniciais (apenas a URL do LinkedIn)
-const webhookUrl = "https://workflow.dnc.group/webhook/e8a75359-7699-4bef-bdfd-8dcc3d793964";
+// URL do webhook para enviar os dados iniciais (URL do LinkedIn em produção)
+const webhookUrl = "https://workflow.dnc.group/webhook/eb9d29a2-c1d8-4d05-ae7e-70c84c46ac06";
 
 // Função para enviar a URL do LinkedIn e o ID gerado para o webhook
 export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse> => {
