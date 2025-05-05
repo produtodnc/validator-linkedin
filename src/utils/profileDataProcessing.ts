@@ -69,13 +69,36 @@ export const generateSuggestedImprovements = (data: any) => {
  * Check if the minimum required data is available in the profile
  */
 export const hasMinimumData = (data: any): boolean => {
-  return Boolean(
-    data.feedback_headline || 
-    data.feedback_sobre || 
-    data.feedback_experience || 
-    data.feedback_projetos || 
-    data.feedback_certificados
-  );
+  console.log("[DATA CHECK] Verificando dados mínimos:", data);
+  
+  // Verificar se pelo menos um campo de feedback está preenchido
+  const feedbackFields = [
+    'feedback_headline', 
+    'feedback_sobre', 
+    'feedback_experience', 
+    'feedback_projetos', 
+    'feedback_certificados'
+  ];
+  
+  // Verificar se os campos de nota estão preenchidos
+  const notaFields = [
+    'feedback_headline_nota', 
+    'feedback_sobre_nota', 
+    'feedback_experience_nota', 
+    'feedback_projetos_nota', 
+    'feedback_certificados_nota'
+  ];
+  
+  // Verificar se pelo menos um par (feedback e nota) está completo
+  for (let i = 0; i < feedbackFields.length; i++) {
+    if (data[feedbackFields[i]] && data[notaFields[i]]) {
+      console.log("[DATA CHECK] Encontrou par completo:", feedbackFields[i], data[feedbackFields[i]], notaFields[i], data[notaFields[i]]);
+      return true;
+    }
+  }
+  
+  console.log("[DATA CHECK] Nenhum par completo de feedback e nota encontrado");
+  return false;
 };
 
 /**

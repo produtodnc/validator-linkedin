@@ -14,14 +14,15 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
   const { recordId } = useLinkedinUrlProcessor(linkedinUrl);
   
   // Fetch and process profile data using the record ID
-  const { isLoading, isError, profile, dataReceived } = useProfileData(linkedinUrl, recordId);
+  const { isLoading, isError, profile, dataReceived, retryCount } = useProfileData(linkedinUrl, recordId);
   
   // Prepare the content props that ResultContent expects
   const contentProps: ResultContentProps = {
     isLoading,
     isError,
     profile,
-    dataReceived
+    dataReceived,
+    retryCount
   };
   
   // Clone the children element and pass the content props

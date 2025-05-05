@@ -3,7 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const LoadingState = () => {
+interface LoadingStateProps {
+  retryCount?: number;
+}
+
+const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
   const [progress, setProgress] = useState(0);
   const [waitingMessage, setWaitingMessage] = useState("Aguarde enquanto processamos seu perfil do LinkedIn...");
   
@@ -37,7 +41,11 @@ const LoadingState = () => {
     <div className="flex flex-col items-center justify-center p-12">
       <div className="h-12 w-12 border-4 border-t-[#0FA0CE] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
       <p className="text-gray-600 mt-4 text-center">{waitingMessage}</p>
-      <p className="text-gray-500 text-sm mt-2 text-center">Estamos aguardando 20 segundos para buscar os dados completos do seu perfil.</p>
+      <p className="text-gray-500 text-sm mt-2 text-center">
+        {retryCount > 0 
+          ? `Tentativa ${retryCount}/3: Estamos verificando novamente o banco de dados.`
+          : "Estamos aguardando 20 segundos para buscar os dados completos do seu perfil."}
+      </p>
       
       <div className="w-full mt-8">
         <Progress value={progress} className="h-2" />

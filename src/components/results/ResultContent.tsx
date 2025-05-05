@@ -13,6 +13,7 @@ export interface ResultContentProps {
   profile?: LinkedInProfile | null;
   dataReceived?: boolean;
   endpointStatus?: number | null;
+  retryCount?: number;
 }
 
 const ResultContent: React.FC<ResultContentProps> = ({
@@ -20,11 +21,12 @@ const ResultContent: React.FC<ResultContentProps> = ({
   isError = false,
   profile = null,
   dataReceived = false,
-  endpointStatus = null
+  endpointStatus = null,
+  retryCount = 0
 }) => {
   
   if (isLoading) {
-    return <LoadingState />;
+    return <LoadingState retryCount={retryCount} />;
   }
   
   if (isError) {
@@ -32,7 +34,7 @@ const ResultContent: React.FC<ResultContentProps> = ({
   }
   
   if (!dataReceived) {
-    return <NoDataState message="Aguardando dados do endpoint /api/resultado..." />;
+    return <NoDataState message={`Aguardando dados do banco de dados... Tentativas: ${retryCount}/3`} />;
   }
   
   if (profile) {
@@ -42,7 +44,7 @@ const ResultContent: React.FC<ResultContentProps> = ({
           <Alert className="mb-6 bg-green-50">
             <AlertTitle>Sucesso!</AlertTitle>
             <AlertDescription>
-              Os dados foram recebidos com sucesso no endpoint e estão sendo exibidos abaixo.
+              Os dados foram recebidos com sucesso e estão sendo exibidos abaixo.
             </AlertDescription>
           </Alert>
         )}
