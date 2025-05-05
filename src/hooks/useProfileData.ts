@@ -18,15 +18,18 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
   const [profile, setProfile] = useState<LinkedInProfile | null>(null);
   const [dataReceived, setDataReceived] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [endpointStatus, setEndpointStatus] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
+    let isMounted = true; // Para evitar atualizações de estado após desmontagem
+
     if (!recordId) {
-      console.error("[RESULTS] ID de registro não encontrado");
-      setIsError(true);
-      setIsLoading(false);
+      console.log("[PROFILE_DATA] Aguardando ID de registro...");
       return;
     }
+
+    console.log("[PROFILE_DATA] ID de registro recebido:", recordId);
 
     const fetchResultsWithPolling = async () => {
       // Primeiro toast ao iniciar o processo
@@ -41,10 +44,18 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
       const intervalMs = 5000;
       
       // Consulta imediata
-      await fetchResultsFromSupabase(recordId, attempt);
+      const immediateResult = await fetchResultsFromSupabase(recordId, attempt);
+      
+      // Se já recebemos dados, não precisamos continuar com polling
+      if (immediateResult || !isMounted) return;
       
       // Configurar o intervalo para as próximas consultas
       const pollingInterval = setInterval(async () => {
+        if (!isMounted) {
+          clearInterval(pollingInterval);
+          return;
+        }
+        
         // Incrementar tentativa para log
         attempt++;
         
@@ -59,40 +70,52 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
           clearInterval(pollingInterval);
           
           // Se não recebemos dados após todas as tentativas, agendar mais 3 tentativas com intervalo de 10s
-          if (!dataReceived && !isError) {
-            console.log("[RESULTS] Início das tentativas adicionais...");
+          if (!dataReceived && !isError && isMounted) {
+            console.log("[PROFILE_DATA] Início das tentativas adicionais...");
             startAdditionalAttempts(recordId);
           }
           return;
         }
         
-        console.log(`[RESULTS] Consulta ${attempt}/${maxAttempts} durante os primeiros 20 segundos`);
-        setRetryCount(attempt - 1);
-        await fetchResultsFromSupabase(recordId, attempt);
+        console.log(`[PROFILE_DATA] Consulta ${attempt}/${maxAttempts} durante os primeiros 20 segundos`);
+        if (isMounted) {
+          setRetryCount(attempt - 1);
+          await fetchResultsFromSupabase(recordId, attempt);
+        }
       }, intervalMs);
       
       // Limpar intervalo quando o componente for desmontado
-      return () => clearInterval(pollingInterval);
+      return () => {
+        isMounted = false;
+        clearInterval(pollingInterval);
+      };
     };
 
     fetchResultsWithPolling();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [linkedinUrl, recordId, toast]);
   
   // Função para iniciar tentativas adicionais após os 20 segundos iniciais
   const startAdditionalAttempts = (id: string) => {
     let additionalAttempt = 1;
     const maxAdditionalAttempts = 3;
+    let isMounted = true;
     
     const tryAgain = async () => {
-      console.log(`[RESULTS] Tentativa adicional ${additionalAttempt}/${maxAdditionalAttempts}`);
-      setRetryCount(additionalAttempt);
+      if (!isMounted) return;
       
-      await fetchResultsFromSupabase(id, additionalAttempt + 4); // +4 porque já fizemos 4 tentativas
+      console.log(`[PROFILE_DATA] Tentativa adicional ${additionalAttempt}/${maxAdditionalAttempts}`);
+      setRetryCount(additionalAttempt + 4); // +4 porque já fizemos 4 tentativas
+      
+      await fetchResultsFromSupabase(id, additionalAttempt + 4);
       
       additionalAttempt++;
       
       // Se já recebemos dados ou tivemos um erro, não agendar mais tentativas
-      if (dataReceived || isError || additionalAttempt > maxAdditionalAttempts) {
+      if (dataReceived || isError || additionalAttempt > maxAdditionalAttempts || !isMounted) {
         return;
       }
       
@@ -102,32 +125,42 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
     
     // Iniciar a primeira tentativa adicional
     setTimeout(tryAgain, 10000);
+    
+    return () => {
+      isMounted = false;
+    };
   };
 
   const fetchResultsFromSupabase = async (id: string, attempt: number) => {
     try {
-      console.log(`[RESULTS] Tentativa ${attempt}: Consultando dados do Supabase para o ID:`, id);
+      console.log(`[PROFILE_DATA] Tentativa ${attempt}: Consultando dados do Supabase para o ID:`, id);
       
       // Fetch directly from the linkedin_links table using the ID
-      const { data, error } = await supabase
+      const { data, error, status } = await supabase
         .from('linkedin_links')
         .select('*')
         .eq('id', id)
         .single();
       
+      // Armazenar o status da requisição
+      setEndpointStatus(status);
+      
       if (error) {
-        console.error(`[RESULTS] Tentativa ${attempt}: Erro ao buscar dados do Supabase:`, error);
+        console.error(`[PROFILE_DATA] Tentativa ${attempt}: Erro ao buscar dados do Supabase:`, error);
         
         // Não configuramos erro aqui, apenas continuamos com o polling
-        return;
+        return false;
       }
       
-      console.log(`[RESULTS] Tentativa ${attempt}: Dados recebidos do Supabase:`, data);
+      console.log(`[PROFILE_DATA] Tentativa ${attempt}: Dados recebidos do Supabase:`, data);
       
       if (data) {
         // Check if the minimum required data is available
-        if (hasMinimumData(data)) {
-          console.log("[RESULTS] Dados suficientes encontrados, criando perfil completo");
+        const hasData = hasMinimumData(data);
+        console.log(`[PROFILE_DATA] Verificação de dados mínimos: ${hasData ? 'Sucesso' : 'Falha'}`);
+        
+        if (hasData) {
+          console.log("[PROFILE_DATA] Dados suficientes encontrados, criando perfil completo");
           
           // Create complete profile with data from the record
           const completeProfile = createProfileFromData(data, linkedinUrl);
@@ -143,15 +176,15 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
           
           return true; // Dados encontrados
         } else {
-          console.log("[RESULTS] Dados encontrados, mas não são suficientes.");
+          console.log("[PROFILE_DATA] Dados encontrados, mas não são suficientes.");
           return false; // Dados insuficientes
         }
       } else {
-        console.log(`[RESULTS] Nenhum dado encontrado para o ID na tentativa ${attempt}:`, id);
+        console.log(`[PROFILE_DATA] Nenhum dado encontrado para o ID na tentativa ${attempt}:`, id);
         return false; // Nenhum dado
       }
     } catch (error) {
-      console.error(`[RESULTS] Tentativa ${attempt}: Erro ao processar dados do Supabase:`, error);
+      console.error(`[PROFILE_DATA] Tentativa ${attempt}: Erro ao processar dados do Supabase:`, error);
       
       // Se for a última tentativa de todas (após as adicionais), exibir erro
       if (attempt >= 7) { // 4 iniciais + 3 adicionais
@@ -174,6 +207,7 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
     isError,
     profile,
     dataReceived,
-    retryCount
+    retryCount,
+    endpointStatus
   };
 };

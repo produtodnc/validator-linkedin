@@ -24,6 +24,7 @@ const ResultContent: React.FC<ResultContentProps> = ({
   endpointStatus = null,
   retryCount = 0
 }) => {
+  console.log("[RESULT_CONTENT] Estado atual:", { isLoading, isError, dataReceived, retryCount });
   
   if (isLoading) {
     return <LoadingState retryCount={retryCount} />;

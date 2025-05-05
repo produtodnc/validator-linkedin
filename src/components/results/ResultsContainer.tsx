@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ResultContentProps } from "@/components/results/ResultContent";
 import { useLinkedinUrlProcessor } from "@/hooks/useLinkedinUrlProcessor";
 import { useProfileData } from "@/hooks/useProfileData";
@@ -11,18 +11,24 @@ interface ResultsContainerProps {
 
 const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, children }) => {
   // Process the LinkedIn URL and get the record ID
-  const { recordId } = useLinkedinUrlProcessor(linkedinUrl);
+  const { recordId, isProcessing } = useLinkedinUrlProcessor(linkedinUrl);
   
   // Fetch and process profile data using the record ID
-  const { isLoading, isError, profile, dataReceived, retryCount } = useProfileData(linkedinUrl, recordId);
+  const { isLoading, isError, profile, dataReceived, retryCount, endpointStatus } = useProfileData(linkedinUrl, recordId);
+  
+  // Logging recordId to help debug
+  useEffect(() => {
+    console.log("[RESULTS_CONTAINER] Using recordId:", recordId);
+  }, [recordId]);
   
   // Prepare the content props that ResultContent expects
   const contentProps: ResultContentProps = {
-    isLoading,
+    isLoading: isLoading || isProcessing,
     isError,
     profile,
     dataReceived,
-    retryCount
+    retryCount,
+    endpointStatus
   };
   
   // Clone the children element and pass the content props
