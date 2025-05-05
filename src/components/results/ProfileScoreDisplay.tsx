@@ -86,14 +86,6 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
         <ScoreItem label="Certificados" score={certificadosScore} />
       </div>
       
-      <div className="flex justify-center mt-8">
-        <Button 
-          onClick={() => navigate("/")}
-          className="bg-[#0FA0CE] hover:bg-[#1EAEDB] text-white"
-        >
-          Validar outro perfil
-        </Button>
-      </div>
     </div>
   );
 };
