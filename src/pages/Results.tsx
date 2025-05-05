@@ -5,18 +5,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ResultContent from "@/components/results/ResultContent";
 import ResultsContainer from "@/components/results/ResultsContainer";
-import { setupEndpointListener } from "@/utils/endpointListener";
 
 const Results = () => {
   const location = useLocation();
   
   // Get LinkedIn URL from navigation state
   const linkedinUrl = location.state?.linkedinUrl || "";
-  
-  // Set up endpoint listener when component loads
-  useEffect(() => {
-    setupEndpointListener();
-  }, []);
   
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
