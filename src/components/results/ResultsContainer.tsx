@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { ResultContentProps } from "@/components/results/ResultContent";
 import { useLinkedinUrlProcessor } from "@/hooks/useLinkedinUrlProcessor";
 import { useProfileData } from "@/hooks/useProfileData";

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +14,7 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
   const [isProcessing, setIsProcessing] = useState(true);
   
   useEffect(() => {
-    // If there's no URL, redirect to home page
+    // Se não há URL, redirecionar para home
     if (!linkedinUrl) {
       toast({
         title: "Sem dados",
@@ -24,7 +25,7 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
       return;
     }
     
-    // Try to recover recordId from sessionStorage first
+    // Primeiro tentamos recuperar o recordId do sessionStorage
     const storedRecordId = sessionStorage.getItem(`recordId_${linkedinUrl}`);
     if (storedRecordId) {
       console.log("[URL_PROCESSOR] Recuperando ID do registro da sessão:", storedRecordId);
@@ -33,12 +34,12 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
       return;
     }
     
-    // Store URL in session for identification
+    // Armazenar URL na sessão para identificação
     sessionStorage.setItem('currentProfileUrl', linkedinUrl);
     
     console.log("[URL_PROCESSOR] Iniciando análise para URL:", linkedinUrl);
     
-    // Send URL to webhook when component is mounted
+    // Enviar URL para webhook quando o componente é montado
     const initializeProcess = async () => {
       try {
         const response = await sendUrlToWebhook(linkedinUrl);
@@ -51,9 +52,9 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
           });
           setIsProcessing(false);
         } else {
-          // Store the record ID for later use
+          // Armazenar o ID do registro para uso posterior
           if (response.recordId) {
-            // Save recordId to sessionStorage with URL as part of the key
+            // Salvar recordId no sessionStorage com URL como parte da chave
             sessionStorage.setItem(`recordId_${linkedinUrl}`, response.recordId);
             setRecordId(response.recordId);
             console.log("[URL_PROCESSOR] ID do registro salvo:", response.recordId);
@@ -79,9 +80,9 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
     
     initializeProcess();
     
-    // Cleanup when unmounting
+    // Cleanup ao desmontar
     return () => {
-      // We keep the recordId in session storage for when the user returns
+      // Mantemos o recordId no sessionStorage para quando o usuário retornar
     };
   }, [linkedinUrl, navigate, toast]);
 

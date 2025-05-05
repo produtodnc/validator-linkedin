@@ -5,8 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LinkedInProfile } from "@/services/linkedinService";
 import { 
   hasMinimumData, 
-  createProfileFromData, 
-  createMockProfile 
+  createProfileFromData
 } from "@/utils/profileDataProcessing";
 
 /**
@@ -44,6 +43,7 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
       const intervalMs = 5000;
       
       // Consulta imediata
+      console.log("[PROFILE_DATA] Iniciando consulta imediata com ID:", recordId);
       const immediateResult = await fetchResultsFromSupabase(recordId, attempt);
       
       // Se já recebemos dados, não precisamos continuar com polling
@@ -77,7 +77,7 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
           return;
         }
         
-        console.log(`[PROFILE_DATA] Consulta ${attempt}/${maxAttempts} durante os primeiros 20 segundos`);
+        console.log(`[PROFILE_DATA] Consulta ${attempt}/${maxAttempts} durante os primeiros 20 segundos com ID:`, recordId);
         if (isMounted) {
           setRetryCount(attempt - 1);
           await fetchResultsFromSupabase(recordId, attempt);
@@ -107,7 +107,7 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
     const tryAgain = async () => {
       if (!isMounted) return;
       
-      console.log(`[PROFILE_DATA] Tentativa adicional ${additionalAttempt}/${maxAdditionalAttempts}`);
+      console.log(`[PROFILE_DATA] Tentativa adicional ${additionalAttempt}/${maxAdditionalAttempts} com ID:`, id);
       setRetryCount(additionalAttempt + 4); // +4 porque já fizemos 4 tentativas
       
       await fetchResultsFromSupabase(id, additionalAttempt + 4);

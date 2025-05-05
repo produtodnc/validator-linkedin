@@ -50,7 +50,7 @@ const webhookUrl = "https://workflow.dnc.group/webhook-test/e8a75359-7699-4bef-b
 // Função para enviar a URL do LinkedIn e o ID gerado para o webhook
 export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse> => {
   try {
-    console.log("Processando URL do LinkedIn:", linkedinUrl);
+    console.log("[LINKEDIN_SERVICE] Processando URL do LinkedIn:", linkedinUrl);
     
     // Primeiro, salva a URL no banco de dados para obter um ID
     const { data: insertedData, error: insertError } = await supabase
@@ -62,7 +62,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       .single();
     
     if (insertError) {
-      console.error("Erro ao salvar URL no banco de dados:", insertError);
+      console.error("[LINKEDIN_SERVICE] Erro ao salvar URL no banco de dados:", insertError);
       return { 
         data: null, 
         error: `Erro ao salvar URL: ${insertError.message}`,
@@ -71,11 +71,15 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
     }
     
     const recordId = insertedData.id;
-    console.log("URL salva no banco com ID:", recordId);
+    console.log("[LINKEDIN_SERVICE] URL salva no banco com ID:", recordId);
+    
+    // Armazenar o ID no sessionStorage para garantir consistência
+    sessionStorage.setItem(`recordId_${linkedinUrl}`, recordId);
+    console.log("[LINKEDIN_SERVICE] ID armazenado no sessionStorage:", recordId);
     
     // Agora tenta enviar o ID e a URL para o webhook
     try {
-      console.log("Enviando URL e ID para o webhook:", linkedinUrl, recordId);
+      console.log("[LINKEDIN_SERVICE] Enviando URL e ID para o webhook:", linkedinUrl, recordId);
       
       // Enviamos a URL do LinkedIn, o ID do registro e uma referência de tempo
       const webhookData = {
@@ -84,7 +88,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
         requestTime: new Date().toISOString()
       };
       
-      console.log("Dados sendo enviados para o webhook:", webhookData);
+      console.log("[LINKEDIN_SERVICE] Dados sendo enviados para o webhook:", webhookData);
       
       const response = await fetch(webhookUrl, {
         method: "POST",
@@ -94,14 +98,14 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
         body: JSON.stringify(webhookData),
       });
       
-      console.log("Status da resposta do webhook:", response.status);
+      console.log("[LINKEDIN_SERVICE] Status da resposta do webhook:", response.status);
       
       // Verificar a resposta
       if (response.ok) {
         // Se conseguiu enviar para o webhook, ótimo
         try {
           const responseData = await response.json();
-          console.log("Resposta do webhook:", responseData);
+          console.log("[LINKEDIN_SERVICE] Resposta do webhook:", responseData);
           return { 
             data: null, 
             status: response.status,
@@ -109,7 +113,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
             message: responseData.message || "URL enviada com sucesso"
           };
         } catch (e) {
-          console.log("Webhook respondeu com sucesso, mas sem dados JSON");
+          console.log("[LINKEDIN_SERVICE] Webhook respondeu com sucesso, mas sem dados JSON");
           return { 
             data: null, 
             status: response.status,
@@ -119,14 +123,14 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
         }
       } else {
         // Se o webhook falhou, mas temos o ID do registro, continuamos mesmo assim
-        console.log("Webhook falhou, mas vamos continuar com o ID do registro:", recordId);
+        console.log("[LINKEDIN_SERVICE] Webhook falhou, mas vamos continuar com o ID do registro:", recordId);
         
         // Captura o erro do webhook para log, mas não interrompe o fluxo
         try {
           const errorData = await response.text();
-          console.error("Erro do webhook (ignorado):", errorData);
+          console.error("[LINKEDIN_SERVICE] Erro do webhook (ignorado):", errorData);
         } catch (e) {
-          console.error("Não foi possível ler o erro do webhook:", e);
+          console.error("[LINKEDIN_SERVICE] Não foi possível ler o erro do webhook:", e);
         }
         
         // Retorna sucesso mesmo assim, pois o importante é ter o ID do registro
@@ -138,7 +142,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       }
     } catch (webhookError) {
       // Se o webhook falhou completamente, mas temos o ID do registro, continuamos mesmo assim
-      console.error("Erro ao chamar webhook (ignorado):", webhookError);
+      console.error("[LINKEDIN_SERVICE] Erro ao chamar webhook (ignorado):", webhookError);
       
       return {
         data: null,
@@ -147,7 +151,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       };
     }
   } catch (error) {
-    console.error("Erro ao processar a requisição:", error);
+    console.error("[LINKEDIN_SERVICE] Erro ao processar a requisição:", error);
     return { 
       data: null, 
       error: String(error), 
