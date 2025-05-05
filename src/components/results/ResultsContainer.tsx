@@ -11,7 +11,7 @@ interface ResultsContainerProps {
 
 const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, children }) => {
   // Process the LinkedIn URL and get the record ID
-  const { recordId, isProcessing } = useLinkedinUrlProcessor(linkedinUrl);
+  const { recordId, isProcessing, retryCount: urlProcessorRetryCount } = useLinkedinUrlProcessor(linkedinUrl);
   
   // Fetch and process profile data using the record ID
   const { isLoading, isError, profile, dataReceived, retryCount, endpointStatus } = useProfileData(linkedinUrl, recordId);
@@ -19,7 +19,10 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
   // Logging recordId to help debug
   useEffect(() => {
     console.log("[RESULTS_CONTAINER] Using recordId:", recordId);
-  }, [recordId]);
+    console.log("[RESULTS_CONTAINER] Network status:", navigator.onLine ? "Online" : "Offline");
+    console.log("[RESULTS_CONTAINER] URL processor retries:", urlProcessorRetryCount);
+    console.log("[RESULTS_CONTAINER] Profile data retries:", retryCount);
+  }, [recordId, urlProcessorRetryCount, retryCount]);
   
   // Prepare the content props that ResultContent expects
   const contentProps: ResultContentProps = {
@@ -27,7 +30,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
     isError,
     profile,
     dataReceived,
-    retryCount,
+    retryCount: Math.max(retryCount || 0, urlProcessorRetryCount || 0),
     endpointStatus
   };
   
