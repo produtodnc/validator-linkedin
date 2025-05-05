@@ -123,10 +123,14 @@ export type Database = {
       linkedin_links: {
         Row: {
           created_at: string
+          feedback_certificados: string | null
+          feedback_certificados_nota: number | null
           feedback_experience: string | null
           feedback_experience_nota: number | null
           feedback_headline: string | null
           feedback_headline_nota: number | null
+          feedback_projetos: string | null
+          feedback_projetos_nota: number | null
           feedback_sobre: string | null
           feedback_sobre_nota: number | null
           id: string
@@ -134,10 +138,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          feedback_certificados?: string | null
+          feedback_certificados_nota?: number | null
           feedback_experience?: string | null
           feedback_experience_nota?: number | null
           feedback_headline?: string | null
           feedback_headline_nota?: number | null
+          feedback_projetos?: string | null
+          feedback_projetos_nota?: number | null
           feedback_sobre?: string | null
           feedback_sobre_nota?: number | null
           id?: string
@@ -145,10 +153,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          feedback_certificados?: string | null
+          feedback_certificados_nota?: number | null
           feedback_experience?: string | null
           feedback_experience_nota?: number | null
           feedback_headline?: string | null
           feedback_headline_nota?: number | null
+          feedback_projetos?: string | null
+          feedback_projetos_nota?: number | null
           feedback_sobre?: string | null
           feedback_sobre_nota?: number | null
           id?: string
