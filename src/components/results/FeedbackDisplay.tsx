@@ -25,7 +25,6 @@ const FeedbackDisplay = ({ profile }: FeedbackDisplayProps) => {
       <h2 className="text-2xl font-bold mb-6 text-center text-[#1A1F2C]">Feedback Detalhado</h2>
       
       <Card className="p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4 text-[#0FA0CE]">Feedback Geral</h3>
         <div className="space-y-6">
           <div>
             <h4 className="font-semibold text-lg mb-2">Headline</h4>
