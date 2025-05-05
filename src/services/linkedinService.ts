@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 // Interface para dados do perfil LinkedIn
 export interface LinkedInProfile {
   url: string;
-  name: string;
-  headline: string;
-  recommendations: number;
-  connections: string;
+  name?: string;
+  headline?: string;
+  recommendations?: number;
+  connections?: string;
   completionScore: number;
   suggestedImprovements: string[];
   // Campos adicionais para os dados de feedback (formato antigo)
@@ -22,6 +22,7 @@ export interface LinkedInProfile {
   Certificados_feedback?: string;
   nota_certificados?: number;
   // Campos do banco de dados (formato novo)
+  linkedin_url?: string;
   feedback_headline?: string;
   feedback_headline_nota?: number;
   feedback_sobre?: string;

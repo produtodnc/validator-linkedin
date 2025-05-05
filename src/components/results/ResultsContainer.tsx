@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendUrlToWebhook } from "@/services/linkedinService";
 import { supabase } from "@/integrations/supabase/client";
 import { ResultContentProps } from "@/components/results/ResultContent";
+import { LinkedInProfile } from "@/services/linkedinService";
 
 interface ResultsContainerProps {
   linkedinUrl: string;
@@ -16,7 +17,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<LinkedInProfile | null>(null);
   const [dataReceived, setDataReceived] = useState(false);
   const [recordId, setRecordId] = useState<string | null>(null);
   
@@ -143,16 +144,26 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
         
         if (hasMinimumData) {
           // Criar o objeto de perfil completo com dados do registro
-          const completeProfile = {
+          const completeProfile: LinkedInProfile = {
             url: linkedinUrl,
-            name: data.name || "Perfil LinkedIn",
-            headline: data.headline || "Profissional",
-            recommendations: data.recommendations || 0,
-            connections: data.connections || "500+",
+            name: "Perfil LinkedIn", // Valor padrão, já que não existe no banco
+            headline: data.feedback_headline ? "Profissional" : "",
+            recommendations: 0, // Valor padrão
+            connections: "500+", // Valor padrão
             completionScore: calculateCompletionScore(data),
             suggestedImprovements: generateSuggestedImprovements(data),
-            // Copiar todos os outros campos do registro
-            ...data
+            // Copiar todos os outros campos do registro para o perfil
+            linkedin_url: data.linkedin_url,
+            feedback_headline: data.feedback_headline,
+            feedback_headline_nota: data.feedback_headline_nota,
+            feedback_sobre: data.feedback_sobre,
+            feedback_sobre_nota: data.feedback_sobre_nota,
+            feedback_experience: data.feedback_experience,
+            feedback_experience_nota: data.feedback_experience_nota,
+            feedback_projetos: data.feedback_projetos,
+            feedback_projetos_nota: data.feedback_projetos_nota,
+            feedback_certificados: data.feedback_certificados,
+            feedback_certificados_nota: data.feedback_certificados_nota
           };
           
           setProfile(completeProfile);
@@ -167,7 +178,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
           console.log("[RESULTS] Dados mínimos não encontrados, inserindo dados simulados para teste");
           
           // Para fins de demonstração, criar dados fictícios se não houver dados reais
-          const mockProfile = {
+          const mockProfile: LinkedInProfile = {
             url: linkedinUrl,
             name: "Perfil de Teste",
             headline: "Profissional de Tecnologia",
@@ -198,7 +209,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
           toast({
             title: "Usando Dados de Teste",
             description: "Não encontramos dados reais para seu perfil. Exibindo dados de demonstração.",
-            variant: "warning",
+            variant: "default", // Changed from "warning" to "default"
           });
         }
       } else {
