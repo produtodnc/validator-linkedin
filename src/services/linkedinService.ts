@@ -43,8 +43,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
     const { data: insertedData, error: insertError } = await supabase
       .from('linkedin_links')
       .insert({
-        linkedin_url: linkedinUrl,
-        webhook_sent: false
+        linkedin_url: linkedinUrl
       })
       .select()
       .single();
@@ -82,16 +81,6 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
     });
     
     console.log("Status da resposta do webhook:", response.status);
-    
-    // Atualiza o registro no banco de dados com o status da resposta
-    await supabase
-      .from('linkedin_links')
-      .update({
-        webhook_sent: true,
-        response_status: response.status,
-        response_message: response.statusText
-      })
-      .eq('id', recordId);
     
     // Verificar a resposta adequadamente
     if (!response.ok) {
