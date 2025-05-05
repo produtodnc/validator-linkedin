@@ -10,7 +10,7 @@ export interface LinkedInProfile {
   connections: string;
   completionScore: number;
   suggestedImprovements: string[];
-  // Campos adicionais para os dados de feedback
+  // Campos adicionais para os dados de feedback (formato antigo)
   Headline_feedback?: string;
   nota_headline?: number;
   Sobre_feedback?: string;
@@ -21,6 +21,17 @@ export interface LinkedInProfile {
   nota_projetos?: number;
   Certificados_feedback?: string;
   nota_certificados?: number;
+  // Campos do banco de dados (formato novo)
+  feedback_headline?: string;
+  feedback_headline_nota?: number;
+  feedback_sobre?: string;
+  feedback_sobre_nota?: number;
+  feedback_experience?: string;
+  feedback_experience_nota?: number;
+  feedback_projetos?: string;
+  feedback_projetos_nota?: number;
+  feedback_certificados?: string;
+  feedback_certificados_nota?: number;
 }
 
 // Interface para resposta da API

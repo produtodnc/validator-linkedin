@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // Interface para dados do perfil LinkedIn
 interface LinkedInProfile {
@@ -13,6 +14,7 @@ interface LinkedInProfile {
   connections: string;
   completionScore: number;
   suggestedImprovements: string[];
+  // Campos de feedback
   Headline_feedback?: string;
   nota_headline?: number;
   Sobre_feedback?: string;
@@ -23,6 +25,17 @@ interface LinkedInProfile {
   nota_projetos?: number;
   Certificados_feedback?: string;
   nota_certificados?: number;
+  // Campos do banco de dados
+  feedback_headline?: string;
+  feedback_headline_nota?: number;
+  feedback_sobre?: string;
+  feedback_sobre_nota?: number;
+  feedback_experience?: string;
+  feedback_experience_nota?: number;
+  feedback_projetos?: string;
+  feedback_projetos_nota?: number;
+  feedback_certificados?: string;
+  feedback_certificados_nota?: number;
 }
 
 interface ProfileDisplayProps {
@@ -45,45 +58,97 @@ const ProfileDisplay = ({ profile }: ProfileDisplayProps) => {
               <p className="text-sm text-gray-600 break-all">{profile.url}</p>
             </div>
             
-            {profile.Headline_feedback && (
-              <div>
-                <p className="font-medium text-gray-700">Análise de Headline</p>
-                <p className="text-gray-900 mb-1">{profile.Headline_feedback}</p>
-                <p className="text-gray-900 font-bold">Nota: {profile.nota_headline}/5</p>
-              </div>
-            )}
-            
-            {profile.Sobre_feedback && (
-              <div>
-                <p className="font-medium text-gray-700">Análise do Sobre</p>
-                <p className="text-gray-900 mb-1">{profile.Sobre_feedback}</p>
-                <p className="text-gray-900 font-bold">Nota: {profile.nota_sobre}/5</p>
-              </div>
-            )}
-            
-            {profile.Experiencias_feedback && (
-              <div>
-                <p className="font-medium text-gray-700">Análise de Experiências</p>
-                <p className="text-gray-900 mb-1">{profile.Experiencias_feedback}</p>
-                <p className="text-gray-900 font-bold">Nota: {profile.nota_experiencia}/5</p>
-              </div>
-            )}
-            
-            {profile.Projetos_feedback && (
-              <div>
-                <p className="font-medium text-gray-700">Análise de Projetos</p>
-                <p className="text-gray-900 mb-1">{profile.Projetos_feedback}</p>
-                <p className="text-gray-900 font-bold">Nota: {profile.nota_projetos}/5</p>
-              </div>
-            )}
-            
-            {profile.Certificados_feedback && (
-              <div>
-                <p className="font-medium text-gray-700">Análise de Certificados</p>
-                <p className="text-gray-900 mb-1">{profile.Certificados_feedback}</p>
-                <p className="text-gray-900 font-bold">Nota: {profile.nota_certificados}/5</p>
-              </div>
-            )}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Seção</TableHead>
+                  <TableHead>Feedback</TableHead>
+                  <TableHead className="text-center">Nota</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {profile.feedback_headline && (
+                  <TableRow>
+                    <TableCell className="font-medium">Headline</TableCell>
+                    <TableCell>{profile.feedback_headline}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.feedback_headline_nota}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.feedback_sobre && (
+                  <TableRow>
+                    <TableCell className="font-medium">Sobre</TableCell>
+                    <TableCell>{profile.feedback_sobre}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.feedback_sobre_nota}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.feedback_experience && (
+                  <TableRow>
+                    <TableCell className="font-medium">Experiências</TableCell>
+                    <TableCell>{profile.feedback_experience}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.feedback_experience_nota}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.feedback_projetos && (
+                  <TableRow>
+                    <TableCell className="font-medium">Projetos</TableCell>
+                    <TableCell>{profile.feedback_projetos}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.feedback_projetos_nota}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.feedback_certificados && (
+                  <TableRow>
+                    <TableCell className="font-medium">Certificados</TableCell>
+                    <TableCell>{profile.feedback_certificados}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.feedback_certificados_nota}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {/* Compatibilidade com formato antigo dos dados */}
+                {profile.Headline_feedback && !profile.feedback_headline && (
+                  <TableRow>
+                    <TableCell className="font-medium">Headline</TableCell>
+                    <TableCell>{profile.Headline_feedback}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.nota_headline}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.Sobre_feedback && !profile.feedback_sobre && (
+                  <TableRow>
+                    <TableCell className="font-medium">Sobre</TableCell>
+                    <TableCell>{profile.Sobre_feedback}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.nota_sobre}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.Experiencias_feedback && !profile.feedback_experience && (
+                  <TableRow>
+                    <TableCell className="font-medium">Experiências</TableCell>
+                    <TableCell>{profile.Experiencias_feedback}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.nota_experiencia}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.Projetos_feedback && !profile.feedback_projetos && (
+                  <TableRow>
+                    <TableCell className="font-medium">Projetos</TableCell>
+                    <TableCell>{profile.Projetos_feedback}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.nota_projetos}/5</TableCell>
+                  </TableRow>
+                )}
+                
+                {profile.Certificados_feedback && !profile.feedback_certificados && (
+                  <TableRow>
+                    <TableCell className="font-medium">Certificados</TableCell>
+                    <TableCell>{profile.Certificados_feedback}</TableCell>
+                    <TableCell className="text-center font-bold">{profile.nota_certificados}/5</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
