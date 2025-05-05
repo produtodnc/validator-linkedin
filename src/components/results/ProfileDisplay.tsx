@@ -4,39 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-// Interface para dados do perfil LinkedIn
-interface LinkedInProfile {
-  url: string;
-  name: string;
-  headline: string;
-  recommendations: number;
-  connections: string;
-  completionScore: number;
-  suggestedImprovements: string[];
-  // Campos de feedback
-  Headline_feedback?: string;
-  nota_headline?: number;
-  Sobre_feedback?: string;
-  nota_sobre?: number;
-  Experiencias_feedback?: string;
-  nota_experiencia?: number;
-  Projetos_feedback?: string;
-  nota_projetos?: number;
-  Certificados_feedback?: string;
-  nota_certificados?: number;
-  // Campos do banco de dados
-  feedback_headline?: string;
-  feedback_headline_nota?: number;
-  feedback_sobre?: string;
-  feedback_sobre_nota?: number;
-  feedback_experience?: string;
-  feedback_experience_nota?: number;
-  feedback_projetos?: string;
-  feedback_projetos_nota?: number;
-  feedback_certificados?: string;
-  feedback_certificados_nota?: number;
-}
+import { LinkedInProfile } from "@/services/linkedinService";
 
 interface ProfileDisplayProps {
   profile: LinkedInProfile;
