@@ -33,14 +33,22 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
 
   // Start polling when recordId changes
   useEffect(() => {
-    let cleanup = () => {};
+    let cleanupFn = () => {};
     
     if (recordId) {
       console.log("[PROFILE_DATA] Iniciando processo de polling com ID:", recordId);
-      cleanup = startPolling();
+      
+      // Start polling and store the cleanup function
+      // We need to start it immediately and not wait for the promise
+      startPolling().then(cleanup => {
+        cleanupFn = cleanup;
+      });
     }
     
-    return cleanup;
+    // Return the cleanup function directly
+    return () => {
+      cleanupFn();
+    };
   }, [recordId, startPolling]);
 
   return {

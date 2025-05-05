@@ -48,8 +48,9 @@ export const useProfilePolling = ({
 
   /**
    * Start polling for profile data
+   * Returns a Promise that resolves to a cleanup function
    */
-  const startPolling = async () => {
+  const startPolling = async (): Promise<() => void> => {
     if (!recordId) {
       console.log("[PROFILE_POLLING] Aguardando ID de registro...");
       return () => {};
