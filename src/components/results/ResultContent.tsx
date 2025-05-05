@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import LoadingState from "@/components/results/LoadingState";
 import ErrorState from "@/components/results/ErrorState";
 import NoDataState from "@/components/results/NoDataState";
@@ -41,26 +40,15 @@ const ResultContent: React.FC<ResultContentProps> = ({
   
   // Se chegamos aqui, temos dados para exibir
   return (
-    <>
-      {endpointStatus === 200 && (
-        <Alert className="mb-6 bg-green-50">
-          <AlertTitle>Sucesso!</AlertTitle>
-          <AlertDescription>
-            Os dados foram recebidos com sucesso e estão sendo exibidos abaixo.
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <ProfileScoreDisplay profile={profile} />
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <FeedbackDisplay profile={profile} />
-        </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <ProfileScoreDisplay profile={profile} />
       </div>
-    </>
+      
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <FeedbackDisplay profile={profile} />
+      </div>
+    </div>
   );
 };
 
