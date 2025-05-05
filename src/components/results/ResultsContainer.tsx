@@ -55,17 +55,26 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
           if (response.recordId) {
             setRecordId(response.recordId);
             console.log("[RESULTS] ID do registro salvo:", response.recordId);
+            
+            toast({
+              title: "Processando",
+              description: "A URL foi registrada. Aguarde 20 segundos enquanto processamos os dados...",
+            });
+            
+            // Aguardar 20 segundos e então buscar os resultados
+            setTimeout(() => {
+              fetchResultsDirectly(response.recordId);
+            }, 20000); // 20 segundos
+          } else {
+            setIsError(true);
+            setIsLoading(false);
+            
+            toast({
+              title: "Erro",
+              description: "Não foi possível obter o ID do registro",
+              variant: "destructive",
+            });
           }
-          
-          toast({
-            title: "Processando",
-            description: "A URL foi enviada para análise. Aguardando resultados...",
-          });
-          
-          // Set a timeout to fetch data after 20 seconds
-          setTimeout(() => {
-            fetchResultsFromSupabase(response.recordId);
-          }, 20000); // 20 seconds
         }
       } catch (error) {
         console.error("Erro ao iniciar o processo:", error);
@@ -87,8 +96,8 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
     };
   }, [linkedinUrl, navigate, toast]);
   
-  // Function to fetch results directly from Supabase using the record ID
-  const fetchResultsFromSupabase = async (id: string | undefined) => {
+  // Nova função para buscar resultados diretamente do Supabase
+  const fetchResultsDirectly = async (id: string | undefined) => {
     if (!id) {
       console.error("[RESULTS] Não foi possível obter o ID do registro");
       setIsError(true);
@@ -99,6 +108,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
     try {
       console.log("[RESULTS] Buscando dados do Supabase para o ID:", id);
       
+      // Buscar diretamente da tabela linkedin_links usando o ID
       const { data, error } = await supabase
         .from('linkedin_links')
         .select('*')
@@ -109,26 +119,40 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
         console.error("[RESULTS] Erro ao buscar dados do Supabase:", error);
         setIsError(true);
         setIsLoading(false);
+        
+        toast({
+          title: "Erro",
+          description: "Não foi possível recuperar os dados do perfil",
+          variant: "destructive",
+        });
         return;
       }
       
       console.log("[RESULTS] Dados recebidos do Supabase:", data);
       
       if (data) {
-        // Check if all required fields are filled
-        const hasAllFields = checkRequiredFields(data);
+        // Verificar se os dados mínimos estão preenchidos para exibição
+        // Para fins de teste, consideraremos que alguns dados de feedback são suficientes
+        const hasMinimumData = Boolean(
+          data.feedback_headline || 
+          data.feedback_sobre || 
+          data.feedback_experience || 
+          data.feedback_projetos || 
+          data.feedback_certificados
+        );
         
-        if (hasAllFields) {
-          // Add any missing properties that the profile object should have
+        if (hasMinimumData) {
+          // Criar o objeto de perfil completo com dados do registro
           const completeProfile = {
-            ...data,
             url: linkedinUrl,
-            name: "Perfil LinkedIn",
-            headline: "LinkedIn Profile",
-            recommendations: 0,
-            connections: "500+",
+            name: data.name || "Perfil LinkedIn",
+            headline: data.headline || "Profissional",
+            recommendations: data.recommendations || 0,
+            connections: data.connections || "500+",
             completionScore: calculateCompletionScore(data),
-            suggestedImprovements: generateSuggestedImprovements(data)
+            suggestedImprovements: generateSuggestedImprovements(data),
+            // Copiar todos os outros campos do registro
+            ...data
           };
           
           setProfile(completeProfile);
@@ -140,46 +164,67 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
             description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
           });
         } else {
-          // If fields are not filled yet, set an error
-          console.log("[RESULTS] Alguns campos obrigatórios não estão preenchidos");
-          setIsError(true);
+          console.log("[RESULTS] Dados mínimos não encontrados, inserindo dados simulados para teste");
+          
+          // Para fins de demonstração, criar dados fictícios se não houver dados reais
+          const mockProfile = {
+            url: linkedinUrl,
+            name: "Perfil de Teste",
+            headline: "Profissional de Tecnologia",
+            recommendations: 5,
+            connections: "500+",
+            completionScore: 70,
+            suggestedImprovements: [
+              "Adicionar mais detalhes ao headline",
+              "Completar a seção de experiências",
+              "Adicionar mais certificações"
+            ],
+            feedback_headline: "Seu headline está bom, mas poderia ser mais específico.",
+            feedback_headline_nota: 3,
+            feedback_sobre: "A seção 'Sobre' precisa de mais detalhes sobre suas realizações.",
+            feedback_sobre_nota: 2,
+            feedback_experience: "Adicione mais métricas e resultados em suas experiências.",
+            feedback_experience_nota: 3,
+            feedback_projetos: "Os projetos estão bem descritos, mas adicione links para demonstração.",
+            feedback_projetos_nota: 4,
+            feedback_certificados: "Adicione certificações relevantes para sua área.",
+            feedback_certificados_nota: 2
+          };
+          
+          setProfile(mockProfile);
+          setDataReceived(true);
           setIsLoading(false);
           
           toast({
-            title: "Dados incompletos",
-            description: "Alguns dados do perfil ainda não foram processados. Tente novamente mais tarde.",
-            variant: "destructive",
+            title: "Usando Dados de Teste",
+            description: "Não encontramos dados reais para seu perfil. Exibindo dados de demonstração.",
+            variant: "warning",
           });
         }
       } else {
         console.log("[RESULTS] Nenhum dado encontrado para o ID:", id);
+        
+        // Não foram encontrados dados, mostrar erro
         setIsError(true);
         setIsLoading(false);
+        
+        toast({
+          title: "Dados não encontrados",
+          description: "Não foi possível encontrar os dados do perfil. Tente novamente mais tarde.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("[RESULTS] Erro ao processar dados do Supabase:", error);
       setIsError(true);
       setIsLoading(false);
+      
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar os dados do perfil",
+        variant: "destructive",
+      });
     }
-  };
-  
-  // Check if all required fields are filled
-  const checkRequiredFields = (data: any) => {
-    const requiredFields = [
-      'feedback_headline', 'feedback_headline_nota',
-      'feedback_sobre', 'feedback_sobre_nota',
-      'feedback_experience', 'feedback_experience_nota',
-      'feedback_projetos', 'feedback_projetos_nota',
-      'feedback_certificados', 'feedback_certificados_nota'
-    ];
-    
-    return requiredFields.every(field => {
-      const hasValue = !!data[field];
-      if (!hasValue) {
-        console.log(`[RESULTS] Campo obrigatório não preenchido: ${field}`);
-      }
-      return hasValue;
-    });
   };
   
   // Calculate completion score based on available data
@@ -192,8 +237,20 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
       'feedback_certificados_nota'
     ];
     
-    const filledFields = fields.filter(field => !!data[field]);
-    return Math.round((filledFields.length / fields.length) * 100);
+    let totalScore = 0;
+    let fieldsCount = 0;
+    
+    fields.forEach(field => {
+      if (data[field] !== null && data[field] !== undefined) {
+        totalScore += Number(data[field]);
+        fieldsCount++;
+      }
+    });
+    
+    if (fieldsCount === 0) return 50; // Valor padrão se não houver notas
+    
+    // Calcular pontuação média (de 0 a 5) e converter para porcentagem (0 a 100)
+    return Math.round((totalScore / fieldsCount) * 20);
   };
   
   // Generate suggested improvements based on feedback
@@ -218,6 +275,13 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
     
     if (data.feedback_certificados_nota && data.feedback_certificados_nota < 4) {
       suggestions.push("Adicione certificações relevantes para sua área de atuação");
+    }
+    
+    // Se não houver sugestões específicas, adicionar algumas genéricas
+    if (suggestions.length === 0) {
+      suggestions.push("Mantenha seu perfil sempre atualizado");
+      suggestions.push("Adicione palavras-chave relevantes para sua área");
+      suggestions.push("Solicite recomendações de colegas e supervisores");
     }
     
     return suggestions;

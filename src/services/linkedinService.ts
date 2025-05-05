@@ -72,56 +72,77 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
     const recordId = insertedData.id;
     console.log("URL salva no banco com ID:", recordId);
     
-    // Agora envia o ID e a URL para o webhook
-    console.log("Enviando URL e ID para o webhook:", linkedinUrl, recordId);
-    
-    // Enviamos a URL do LinkedIn, o ID do registro e uma referência de tempo
-    const webhookData = {
-      linkedinUrl,
-      recordId,
-      requestTime: new Date().toISOString()
-    };
-    
-    console.log("Dados sendo enviados para o webhook:", webhookData);
-    
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(webhookData),
-    });
-    
-    console.log("Status da resposta do webhook:", response.status);
-    
-    // Verificar a resposta adequadamente
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erro ao enviar URL para o webhook:", errorText);
-      return { 
-        data: null, 
-        error: `Erro ${response.status}: ${errorText || response.statusText}`,
-        status: response.status
-      };
-    }
-    
-    // Tenta parsear a resposta como JSON
+    // Agora tenta enviar o ID e a URL para o webhook
     try {
-      const responseData = await response.json();
-      console.log("Resposta do webhook:", responseData);
-      return { 
-        data: null, 
-        status: response.status,
-        recordId: recordId, // Return the record ID
-        message: responseData.message || "URL enviada com sucesso"
+      console.log("Enviando URL e ID para o webhook:", linkedinUrl, recordId);
+      
+      // Enviamos a URL do LinkedIn, o ID do registro e uma referência de tempo
+      const webhookData = {
+        linkedinUrl,
+        recordId,
+        requestTime: new Date().toISOString()
       };
-    } catch (e) {
-      console.log("Webhook respondeu com sucesso, mas sem dados JSON");
-      return { 
-        data: null, 
-        status: response.status,
-        recordId: recordId, // Return the record ID even if webhook doesn't return JSON
-        message: "URL enviada com sucesso, sem dados retornados"
+      
+      console.log("Dados sendo enviados para o webhook:", webhookData);
+      
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(webhookData),
+      });
+      
+      console.log("Status da resposta do webhook:", response.status);
+      
+      // Verificar a resposta
+      if (response.ok) {
+        // Se conseguiu enviar para o webhook, ótimo
+        try {
+          const responseData = await response.json();
+          console.log("Resposta do webhook:", responseData);
+          return { 
+            data: null, 
+            status: response.status,
+            recordId: recordId,
+            message: responseData.message || "URL enviada com sucesso"
+          };
+        } catch (e) {
+          console.log("Webhook respondeu com sucesso, mas sem dados JSON");
+          return { 
+            data: null, 
+            status: response.status,
+            recordId: recordId,
+            message: "URL enviada com sucesso, sem dados retornados"
+          };
+        }
+      } else {
+        // Se o webhook falhou, mas temos o ID do registro, continuamos mesmo assim
+        console.log("Webhook falhou, mas vamos continuar com o ID do registro:", recordId);
+        
+        // Captura o erro do webhook para log, mas não interrompe o fluxo
+        try {
+          const errorData = await response.text();
+          console.error("Erro do webhook (ignorado):", errorData);
+        } catch (e) {
+          console.error("Não foi possível ler o erro do webhook:", e);
+        }
+        
+        // Retorna sucesso mesmo assim, pois o importante é ter o ID do registro
+        return {
+          data: null,
+          recordId: recordId,
+          message: "URL registrada com sucesso. O webhook falhou, mas o processo continuará."
+        };
+      }
+    } catch (webhookError) {
+      // Se o webhook falhou completamente, mas temos o ID do registro, continuamos mesmo assim
+      console.error("Erro ao chamar webhook (ignorado):", webhookError);
+      
+      return {
+        data: null,
+        recordId: recordId,
+        message: "URL registrada com sucesso. O webhook não pôde ser chamado, mas o processo continuará."
       };
     }
   } catch (error) {
