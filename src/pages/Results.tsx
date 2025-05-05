@@ -13,7 +13,7 @@ const Results = () => {
   const linkedinUrl = location.state?.linkedinUrl || "";
   
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <Header />
       
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-12">
