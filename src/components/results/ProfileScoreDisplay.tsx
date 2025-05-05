@@ -43,6 +43,11 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
   const projetosScore = convertScore(profile.feedback_projetos_nota || profile.nota_projetos);
   const certificadosScore = convertScore(profile.feedback_certificados_nota || profile.nota_certificados);
   
+  // Calculate overall completion score based on all individual scores
+  const completionScore = profile.completionScore || Math.round(
+    (headlineScore + sobreScore + experienceScore + projetosScore + certificadosScore) / 5
+  );
+  
   return (
     <div className="space-y-8">
       <div className="flex flex-col items-center">
@@ -66,14 +71,14 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
               fill="none" 
               stroke="#007bff" 
               strokeWidth="10" 
-              strokeDasharray={`${251.2 * profile.completionScore / 100} 251.2`} 
+              strokeDasharray={`${251.2 * completionScore / 100} 251.2`} 
               strokeDashoffset="0" 
               strokeLinecap="round" 
               transform="rotate(-90 50 50)" 
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-3xl font-bold">{profile.completionScore}%</span>
+            <span className="text-3xl font-bold">{completionScore}%</span>
           </div>
         </div>
       </div>

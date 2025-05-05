@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { sendUrlToWebhook } from "@/services/linkedinService";
@@ -15,6 +14,28 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
   
+  // Keep track of the current URL being processed
+  const currentUrlRef = useRef<string | null>(null);
+  
+  // Clean storage keys for URLs that are no longer relevant
+  const cleanupOldStorageKeys = () => {
+    // Get all keys from localStorage
+    const allKeys = Object.keys(localStorage);
+    
+    // Find keys that start with recordId_ but don't match the current URL
+    const keysToRemove = allKeys.filter(key => 
+      key.startsWith('recordId_') && key !== `recordId_${linkedinUrl}`
+    );
+    
+    // Remove old keys to prevent storage bloat
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+      if (sessionStorage.getItem(key)) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  };
+  
   useEffect(() => {
     // Se não há URL, redirecionar para home
     if (!linkedinUrl) {
@@ -27,6 +48,19 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
       return;
     }
     
+    // Se a URL não mudou e já estamos processando, não faça nada
+    if (currentUrlRef.current === linkedinUrl && recordId) {
+      return;
+    }
+    
+    // Reset state for new URL
+    setIsProcessing(true);
+    setRetryCount(0);
+    setRecordId(null);
+    
+    // Atualiza a URL de referência
+    currentUrlRef.current = linkedinUrl;
+    
     // Primeiro tentamos recuperar o recordId do localStorage e sessionStorage
     let storedRecordId = localStorage.getItem(`recordId_${linkedinUrl}`) || 
                          sessionStorage.getItem(`recordId_${linkedinUrl}`);
@@ -35,6 +69,9 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
       console.log("[URL_PROCESSOR] Recuperando ID do registro do storage:", storedRecordId);
       setRecordId(storedRecordId);
       setIsProcessing(false);
+      
+      // Limpar chaves antigas para evitar acúmulo no storage
+      cleanupOldStorageKeys();
       return;
     }
     
@@ -47,8 +84,20 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
     // Função para tentar enviar a URL com retry
     const attemptSendUrl = async () => {
       try {
+        // Verificar se a URL atual ainda é a mesma que estamos processando
+        if (currentUrlRef.current !== linkedinUrl) {
+          console.log("[URL_PROCESSOR] URL mudou durante o processamento, abortando requisição anterior");
+          return;
+        }
+        
         console.log(`[URL_PROCESSOR] Tentativa ${retryCount + 1} de enviar URL:`, linkedinUrl);
         const response = await sendUrlToWebhook(linkedinUrl);
+        
+        // Verificar novamente se a URL não mudou durante a requisição
+        if (currentUrlRef.current !== linkedinUrl) {
+          console.log("[URL_PROCESSOR] URL mudou após a requisição, ignorando resultado");
+          return;
+        }
         
         if (response.error) {
           // Verificar se devemos tentar novamente
@@ -77,6 +126,9 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
             setRecordId(response.recordId);
             console.log("[URL_PROCESSOR] ID do registro salvo:", response.recordId);
             
+            // Limpar chaves antigas para evitar acúmulo no storage
+            cleanupOldStorageKeys();
+            
             toast({
               title: "Perfil enviado",
               description: response.message || "Seu perfil foi enviado para análise",
@@ -91,6 +143,12 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
         }
       } catch (error) {
         console.error("[URL_PROCESSOR] Erro ao iniciar o processo:", error);
+        
+        // Verificar se a URL atual ainda é a mesma que estamos processando
+        if (currentUrlRef.current !== linkedinUrl) {
+          console.log("[URL_PROCESSOR] URL mudou durante o erro, abortando retry");
+          return;
+        }
         
         // Verificar se devemos tentar novamente
         if (retryCount < maxRetries) {
@@ -118,7 +176,7 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
     return () => {
       // Mantemos o recordId no localStorage e sessionStorage para quando o usuário retornar
     };
-  }, [linkedinUrl, navigate, toast, retryCount]);
+  }, [linkedinUrl, navigate, toast, retryCount, maxRetries, recordId]);
 
   return { recordId, isProcessing, retryCount };
 };

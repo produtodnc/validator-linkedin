@@ -1,8 +1,9 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ResultContentProps } from "@/components/results/ResultContent";
 import { useLinkedinUrlProcessor } from "@/hooks/useLinkedinUrlProcessor";
 import { useProfileData } from "@/hooks/useProfileData";
+import { useToast } from "@/hooks/use-toast";
 
 interface ResultsContainerProps {
   linkedinUrl: string;
@@ -10,19 +11,40 @@ interface ResultsContainerProps {
 }
 
 const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, children }) => {
+  const { toast } = useToast();
+  const [currentUrl, setCurrentUrl] = useState(linkedinUrl);
+  const previousUrlRef = useRef<string | null>(null);
+  
+  // Update current URL if the prop changes
+  useEffect(() => {
+    if (linkedinUrl !== currentUrl) {
+      console.log("[RESULTS_CONTAINER] URL mudou de", currentUrl, "para", linkedinUrl);
+      previousUrlRef.current = currentUrl;
+      setCurrentUrl(linkedinUrl);
+    }
+  }, [linkedinUrl, currentUrl]);
+  
   // Process the LinkedIn URL and get the record ID
-  const { recordId, isProcessing, retryCount: urlProcessorRetryCount } = useLinkedinUrlProcessor(linkedinUrl);
+  const { recordId, isProcessing, retryCount: urlProcessorRetryCount } = useLinkedinUrlProcessor(currentUrl);
   
   // Fetch and process profile data using the record ID
-  const { isLoading, isError, profile, dataReceived, retryCount, endpointStatus } = useProfileData(linkedinUrl, recordId);
+  const { isLoading, isError, profile, dataReceived, retryCount, endpointStatus } = useProfileData(currentUrl, recordId);
   
-  // Logging recordId to help debug
+  // Effect to detect URL changes
   useEffect(() => {
+    // If URL changed and there was a previous URL, show a toast
+    if (previousUrlRef.current && previousUrlRef.current !== currentUrl) {
+      toast({
+        title: "Nova análise iniciada",
+        description: "Iniciando análise para o novo perfil do LinkedIn",
+      });
+    }
+    
     console.log("[RESULTS_CONTAINER] Using recordId:", recordId);
     console.log("[RESULTS_CONTAINER] Network status:", navigator.onLine ? "Online" : "Offline");
     console.log("[RESULTS_CONTAINER] URL processor retries:", urlProcessorRetryCount);
     console.log("[RESULTS_CONTAINER] Profile data retries:", retryCount);
-  }, [recordId, urlProcessorRetryCount, retryCount]);
+  }, [currentUrl, recordId, urlProcessorRetryCount, retryCount, toast]);
   
   // Prepare the content props that ResultContent expects
   const contentProps: ResultContentProps = {

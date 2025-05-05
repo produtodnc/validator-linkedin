@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LinkedInProfile } from "@/services/linkedinService";
 
@@ -37,6 +37,12 @@ export const useProfilePolling = ({
   const [dataReceived, setDataReceived] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
+  
+  // Use refs to track polling state and avoid stale closures
+  const isMountedRef = useRef(true);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const additionalAttemptsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isPollingActiveRef = useRef(false);
 
   const {
     initialDelay = 0,
@@ -46,18 +52,45 @@ export const useProfilePolling = ({
     additionalAttemptsDelay = 10000
   } = config;
 
+  // Reset polling state
+  const resetPollingState = useCallback(() => {
+    // Clear any active intervals or timeouts
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    
+    if (additionalAttemptsTimeoutRef.current) {
+      clearTimeout(additionalAttemptsTimeoutRef.current);
+      additionalAttemptsTimeoutRef.current = null;
+    }
+    
+    // Reset state for a new polling cycle
+    isPollingActiveRef.current = false;
+    setRetryCount(0);
+    setIsLoading(true);
+    setIsError(false);
+    setDataReceived(false);
+  }, []);
+
   /**
    * Start polling for profile data
    * Returns a Promise that resolves to a cleanup function
    */
-  const startPolling = async (): Promise<() => void> => {
+  const startPolling = useCallback(async (): Promise<() => void> => {
+    // If already polling, stop current polling before starting new one
+    if (isPollingActiveRef.current) {
+      resetPollingState();
+    }
+    
     if (!recordId) {
       console.log("[PROFILE_POLLING] Aguardando ID de registro...");
       return () => {};
     }
 
     console.log("[PROFILE_POLLING] ID de registro recebido:", recordId);
-    let isMounted = true;
+    isPollingActiveRef.current = true;
+    isMountedRef.current = true;
 
     // First toast when starting the process
     toast({
@@ -69,14 +102,16 @@ export const useProfilePolling = ({
     console.log("[PROFILE_POLLING] Iniciando consulta imediata com ID:", recordId);
     const immediateResult = await performAttempt(recordId, 1);
     
-    // If we already received data, no need to continue with polling
-    if (immediateResult || !isMounted) return () => { isMounted = false; };
+    // If we already received data or component is unmounted, no need to continue with polling
+    if (immediateResult || !isMountedRef.current || !isPollingActiveRef.current) {
+      return cleanup;
+    }
     
     // Set up interval for subsequent queries
     let attempt = 1;
-    const pollingInterval = setInterval(async () => {
-      if (!isMounted) {
-        clearInterval(pollingInterval);
+    pollingIntervalRef.current = setInterval(async () => {
+      if (!isMountedRef.current || !isPollingActiveRef.current) {
+        cleanup();
         return;
       }
       
@@ -85,16 +120,19 @@ export const useProfilePolling = ({
       
       // If we already received data or had an error, stop polling
       if (dataReceived || isError) {
-        clearInterval(pollingInterval);
+        cleanup();
         return;
       }
       
       // If we reached the maximum number of attempts, stop polling
       if (attempt > maxInitialAttempts) {
-        clearInterval(pollingInterval);
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
         
         // If we didn't receive data after all attempts, schedule more attempts with longer interval
-        if (!dataReceived && !isError && isMounted) {
+        if (!dataReceived && !isError && isMountedRef.current && isPollingActiveRef.current) {
           console.log("[PROFILE_POLLING] Início das tentativas adicionais...");
           startAdditionalAttempts(recordId);
         }
@@ -102,28 +140,43 @@ export const useProfilePolling = ({
       }
       
       console.log(`[PROFILE_POLLING] Consulta ${attempt}/${maxInitialAttempts} durante os primeiros ${maxInitialAttempts * (intervalMs/1000)} segundos com ID:`, recordId);
-      if (isMounted) {
+      if (isMountedRef.current && isPollingActiveRef.current) {
         setRetryCount(attempt - 1);
         await performAttempt(recordId, attempt);
       }
     }, intervalMs);
     
     // Cleanup function to clear interval when component unmounts
-    return () => {
-      isMounted = false;
-      clearInterval(pollingInterval);
-    };
-  };
+    return cleanup;
+  }, [recordId, toast, intervalMs, maxInitialAttempts, maxAdditionalAttempts, additionalAttemptsDelay, resetPollingState]);
+
+  /**
+   * Cleanup function to stop all polling and timeouts
+   */
+  const cleanup = useCallback(() => {
+    console.log("[PROFILE_POLLING] Limpando recursos de polling");
+    isMountedRef.current = false;
+    isPollingActiveRef.current = false;
+    
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    
+    if (additionalAttemptsTimeoutRef.current) {
+      clearTimeout(additionalAttemptsTimeoutRef.current);
+      additionalAttemptsTimeoutRef.current = null;
+    }
+  }, []);
 
   /**
    * Start additional attempts after initial polling period
    */
-  const startAdditionalAttempts = (id: string) => {
+  const startAdditionalAttempts = useCallback((id: string) => {
     let additionalAttempt = 1;
-    let isMounted = true;
     
     const tryAgain = async () => {
-      if (!isMounted) return;
+      if (!isMountedRef.current || !isPollingActiveRef.current) return;
       
       console.log(`[PROFILE_POLLING] Tentativa adicional ${additionalAttempt}/${maxAdditionalAttempts} com ID:`, id);
       setRetryCount(additionalAttempt + maxInitialAttempts); // Add initial attempts
@@ -133,33 +186,36 @@ export const useProfilePolling = ({
       additionalAttempt++;
       
       // If we already received data or had an error, don't schedule more attempts
-      if (dataReceived || isError || additionalAttempt > maxAdditionalAttempts || !isMounted) {
+      if (dataReceived || isError || additionalAttempt > maxAdditionalAttempts || !isMountedRef.current || !isPollingActiveRef.current) {
         return;
       }
       
       // Schedule next attempt
-      setTimeout(tryAgain, additionalAttemptsDelay);
+      additionalAttemptsTimeoutRef.current = setTimeout(tryAgain, additionalAttemptsDelay);
     };
     
     // Start the first additional attempt
-    setTimeout(tryAgain, additionalAttemptsDelay);
-    
-    return () => {
-      isMounted = false;
-    };
-  };
+    additionalAttemptsTimeoutRef.current = setTimeout(tryAgain, additionalAttemptsDelay);
+  }, [maxInitialAttempts, maxAdditionalAttempts, additionalAttemptsDelay, dataReceived, isError]);
 
   /**
    * Perform a single attempt to fetch profile data
    */
   const performAttempt = async (id: string, attempt: number): Promise<boolean> => {
+    if (!isMountedRef.current || !isPollingActiveRef.current) return false;
+    
     try {
       const result = await onAttempt(id, attempt);
+      
+      if (!isMountedRef.current || !isPollingActiveRef.current) return false;
       
       if (result.dataReceived && result.profile) {
         setProfile(result.profile);
         setDataReceived(true);
         setIsLoading(false);
+        
+        // Stop polling if data is received
+        cleanup();
         return true;
       } 
       
@@ -169,27 +225,37 @@ export const useProfilePolling = ({
         setIsLoading(false);
         setDataReceived(false);
         
-        toast({
-          title: "Análise incompleta",
-          description: "Não conseguimos obter dados suficientes para análise completa",
-          variant: "destructive",
-        });
+        if (isMountedRef.current) {
+          toast({
+            title: "Análise incompleta",
+            description: "Não conseguimos obter dados suficientes para análise completa",
+            variant: "destructive",
+          });
+        }
+        
+        cleanup();
       }
       
       return false;
     } catch (error) {
       console.error(`[PROFILE_POLLING] Erro ao processar tentativa ${attempt}:`, error);
       
+      if (!isMountedRef.current || !isPollingActiveRef.current) return false;
+      
       // Only set error on final attempt
       if (attempt >= maxInitialAttempts + maxAdditionalAttempts) {
         setIsError(true);
         setIsLoading(false);
         
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro ao processar os dados do perfil",
-          variant: "destructive",
-        });
+        if (isMountedRef.current) {
+          toast({
+            title: "Erro",
+            description: "Ocorreu um erro ao processar os dados do perfil",
+            variant: "destructive",
+          });
+        }
+        
+        cleanup();
       }
       
       return false;
@@ -202,6 +268,7 @@ export const useProfilePolling = ({
     profile,
     dataReceived,
     retryCount,
-    startPolling
+    startPolling,
+    resetPollingState
   };
 };
