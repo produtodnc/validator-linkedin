@@ -34,7 +34,7 @@ const ResultContent: React.FC<ResultContentProps> = ({
   }
   
   if (!dataReceived) {
-    return <NoDataState message={`Aguardando dados do banco de dados... Tentativas: ${retryCount}/3`} />;
+    return <NoDataState message={`Não foi possível encontrar dados após múltiplas consultas. Por favor, tente novamente mais tarde.`} />;
   }
   
   if (profile) {

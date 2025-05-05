@@ -1,4 +1,3 @@
-
 import { LinkedInProfile } from "@/services/linkedinService";
 
 /**
@@ -71,34 +70,29 @@ export const generateSuggestedImprovements = (data: any) => {
 export const hasMinimumData = (data: any): boolean => {
   console.log("[DATA CHECK] Verificando dados mínimos:", data);
   
-  // Verificar se pelo menos um campo de feedback está preenchido
-  const feedbackFields = [
-    'feedback_headline', 
-    'feedback_sobre', 
-    'feedback_experience', 
-    'feedback_projetos', 
-    'feedback_certificados'
+  // Verificar se pelo menos um campo de feedback está preenchido com seu respectivo valor de nota
+  let hasAnyCompleteField = false;
+  
+  // Pares de campo de feedback e sua nota correspondente
+  const feedbackPairs = [
+    { feedback: 'feedback_headline', nota: 'feedback_headline_nota' },
+    { feedback: 'feedback_sobre', nota: 'feedback_sobre_nota' },
+    { feedback: 'feedback_experience', nota: 'feedback_experience_nota' },
+    { feedback: 'feedback_projetos', nota: 'feedback_projetos_nota' },
+    { feedback: 'feedback_certificados', nota: 'feedback_certificados_nota' }
   ];
   
-  // Verificar se os campos de nota estão preenchidos
-  const notaFields = [
-    'feedback_headline_nota', 
-    'feedback_sobre_nota', 
-    'feedback_experience_nota', 
-    'feedback_projetos_nota', 
-    'feedback_certificados_nota'
-  ];
-  
-  // Verificar se pelo menos um par (feedback e nota) está completo
-  for (let i = 0; i < feedbackFields.length; i++) {
-    if (data[feedbackFields[i]] && data[notaFields[i]]) {
-      console.log("[DATA CHECK] Encontrou par completo:", feedbackFields[i], data[feedbackFields[i]], notaFields[i], data[notaFields[i]]);
-      return true;
+  // Verificar se pelo menos um par está completo
+  for (const pair of feedbackPairs) {
+    if (data[pair.feedback] && data[pair.nota] !== null && data[pair.nota] !== undefined) {
+      console.log(`[DATA CHECK] Par completo encontrado: ${pair.feedback}="${data[pair.feedback]}", ${pair.nota}=${data[pair.nota]}`);
+      hasAnyCompleteField = true;
+      break;
     }
   }
   
-  console.log("[DATA CHECK] Nenhum par completo de feedback e nota encontrado");
-  return false;
+  console.log(`[DATA CHECK] Resultado da verificação: ${hasAnyCompleteField ? 'Dados suficientes' : 'Dados insuficientes'}`);
+  return hasAnyCompleteField;
 };
 
 /**

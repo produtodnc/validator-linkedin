@@ -9,7 +9,7 @@ interface LoadingStateProps {
 
 const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
   const [progress, setProgress] = useState(0);
-  const [waitingMessage, setWaitingMessage] = useState("Aguarde enquanto processamos seu perfil do LinkedIn...");
+  const [waitingMessage, setWaitingMessage] = useState("Aguarde enquanto consultamos seu perfil do LinkedIn...");
   
   useEffect(() => {
     const startTime = Date.now();
@@ -22,11 +22,11 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
       
       // Atualizar a mensagem com base no tempo decorrido
       if (elapsed > 15000) { // Após 15 segundos
-        setWaitingMessage("Quase lá! Estamos finalizando a busca dos seus dados...");
+        setWaitingMessage("Quase lá! Continuamos buscando seus dados...");
       } else if (elapsed > 10000) { // Após 10 segundos
-        setWaitingMessage("Estamos buscando seus dados no banco de dados. Por favor, continue aguardando...");
+        setWaitingMessage("Estamos consultando o banco de dados em tempo real. Por favor, aguarde...");
       } else if (elapsed > 5000) { // Após 5 segundos
-        setWaitingMessage("A busca dos seus dados está em andamento. Isso levará alguns segundos...");
+        setWaitingMessage("A busca dos seus dados está em andamento. Isso pode levar alguns segundos...");
       }
       
       if (elapsed >= maxTime) {
@@ -37,14 +37,21 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
     return () => clearInterval(interval);
   }, []);
   
+  const getRetryMessage = () => {
+    if (retryCount <= 4) {
+      return `Consultando dados (${retryCount}/4): Verificando se os dados já estão disponíveis.`;
+    }
+    return `Tentativa adicional ${retryCount - 4}/3: Continuamos verificando o banco de dados.`;
+  };
+  
   return (
     <div className="flex flex-col items-center justify-center p-12">
       <div className="h-12 w-12 border-4 border-t-[#0FA0CE] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
       <p className="text-gray-600 mt-4 text-center">{waitingMessage}</p>
       <p className="text-gray-500 text-sm mt-2 text-center">
         {retryCount > 0 
-          ? `Tentativa ${retryCount}/3: Estamos verificando novamente o banco de dados.`
-          : "Estamos aguardando 20 segundos para buscar os dados completos do seu perfil."}
+          ? getRetryMessage()
+          : "Estamos consultando o banco de dados em tempo real para buscar os dados do seu perfil."}
       </p>
       
       <div className="w-full mt-8">

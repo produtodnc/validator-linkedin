@@ -28,25 +28,85 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
       return;
     }
 
-    const fetchResultsWithRetry = async () => {
+    const fetchResultsWithPolling = async () => {
       // Primeiro toast ao iniciar o processo
       toast({
         title: "Processando",
-        description: "A URL foi registrada. Aguarde enquanto processamos os dados...",
+        description: "A URL foi registrada. Consultando dados em tempo real...",
       });
       
-      // Primeira tentativa após 20 segundos
-      setTimeout(() => {
-        fetchResultsFromSupabase(recordId, 1);
-      }, 20000);
+      // Vamos consultar a cada 5 segundos por 4 vezes (20 segundos total)
+      let attempt = 1;
+      const maxAttempts = 4;
+      const intervalMs = 5000;
+      
+      // Consulta imediata
+      await fetchResultsFromSupabase(recordId, attempt);
+      
+      // Configurar o intervalo para as próximas consultas
+      const pollingInterval = setInterval(async () => {
+        // Incrementar tentativa para log
+        attempt++;
+        
+        // Se já recebemos dados ou tivemos um erro, interromper polling
+        if (dataReceived || isError) {
+          clearInterval(pollingInterval);
+          return;
+        }
+        
+        // Se atingimos o número máximo de tentativas, interromper polling
+        if (attempt > maxAttempts) {
+          clearInterval(pollingInterval);
+          
+          // Se não recebemos dados após todas as tentativas, agendar mais 3 tentativas com intervalo de 10s
+          if (!dataReceived && !isError) {
+            console.log("[RESULTS] Início das tentativas adicionais...");
+            startAdditionalAttempts(recordId);
+          }
+          return;
+        }
+        
+        console.log(`[RESULTS] Consulta ${attempt}/${maxAttempts} durante os primeiros 20 segundos`);
+        setRetryCount(attempt - 1);
+        await fetchResultsFromSupabase(recordId, attempt);
+      }, intervalMs);
+      
+      // Limpar intervalo quando o componente for desmontado
+      return () => clearInterval(pollingInterval);
     };
 
-    fetchResultsWithRetry();
+    fetchResultsWithPolling();
   }, [linkedinUrl, recordId, toast]);
+  
+  // Função para iniciar tentativas adicionais após os 20 segundos iniciais
+  const startAdditionalAttempts = (id: string) => {
+    let additionalAttempt = 1;
+    const maxAdditionalAttempts = 3;
+    
+    const tryAgain = async () => {
+      console.log(`[RESULTS] Tentativa adicional ${additionalAttempt}/${maxAdditionalAttempts}`);
+      setRetryCount(additionalAttempt);
+      
+      await fetchResultsFromSupabase(id, additionalAttempt + 4); // +4 porque já fizemos 4 tentativas
+      
+      additionalAttempt++;
+      
+      // Se já recebemos dados ou tivemos um erro, não agendar mais tentativas
+      if (dataReceived || isError || additionalAttempt > maxAdditionalAttempts) {
+        return;
+      }
+      
+      // Agendar próxima tentativa
+      setTimeout(tryAgain, 10000);
+    };
+    
+    // Iniciar a primeira tentativa adicional
+    setTimeout(tryAgain, 10000);
+  };
 
   const fetchResultsFromSupabase = async (id: string, attempt: number) => {
     try {
-      console.log(`[RESULTS] Tentativa ${attempt}: Buscando dados do Supabase para o ID:`, id);
+      console.log(`[RESULTS] Tentativa ${attempt}: Consultando dados do Supabase para o ID:`, id);
       
       // Fetch directly from the linkedin_links table using the ID
       const { data, error } = await supabase
@@ -58,24 +118,7 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
       if (error) {
         console.error(`[RESULTS] Tentativa ${attempt}: Erro ao buscar dados do Supabase:`, error);
         
-        // Se for a primeira tentativa, tentar novamente após 10 segundos
-        if (attempt < 3) {
-          console.log(`[RESULTS] Agendando nova tentativa em 10 segundos...`);
-          setTimeout(() => {
-            setRetryCount(attempt);
-            fetchResultsFromSupabase(id, attempt + 1);
-          }, 10000);
-          return;
-        }
-        
-        setIsError(true);
-        setIsLoading(false);
-        
-        toast({
-          title: "Erro",
-          description: "Não foi possível recuperar os dados do perfil após várias tentativas",
-          variant: "destructive",
-        });
+        // Não configuramos erro aqui, apenas continuamos com o polling
         return;
       }
       
@@ -97,78 +140,32 @@ export const useProfileData = (linkedinUrl: string, recordId: string | null) => 
             title: "Análise concluída",
             description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
           });
+          
+          return true; // Dados encontrados
         } else {
           console.log("[RESULTS] Dados encontrados, mas não são suficientes.");
-          
-          // Se não for a última tentativa, tentar novamente após 10 segundos
-          if (attempt < 3) {
-            console.log(`[RESULTS] Agendando nova tentativa em 10 segundos...`);
-            setTimeout(() => {
-              setRetryCount(attempt);
-              fetchResultsFromSupabase(id, attempt + 1);
-            }, 10000);
-            return;
-          }
-          
-          console.log("[RESULTS] Dados mínimos não encontrados após várias tentativas, usando dados de demonstração");
-          
-          // For demonstration, create mock data if no real data is available after retries
-          const mockProfile = createMockProfile(linkedinUrl);
-          
-          setProfile(mockProfile);
-          setDataReceived(true);
-          setIsLoading(false);
-          
-          toast({
-            title: "Usando Dados de Teste",
-            description: "Não encontramos dados completos para seu perfil. Exibindo dados de demonstração.",
-            variant: "default",
-          });
+          return false; // Dados insuficientes
         }
       } else {
         console.log(`[RESULTS] Nenhum dado encontrado para o ID na tentativa ${attempt}:`, id);
-        
-        // Se não for a última tentativa, tentar novamente após 10 segundos
-        if (attempt < 3) {
-          console.log(`[RESULTS] Agendando nova tentativa em 10 segundos...`);
-          setTimeout(() => {
-            setRetryCount(attempt);
-            fetchResultsFromSupabase(id, attempt + 1);
-          }, 10000);
-          return;
-        }
-        
-        // No data found after all retries, show error
-        setIsError(true);
-        setIsLoading(false);
-        
-        toast({
-          title: "Dados não encontrados",
-          description: "Não foi possível encontrar os dados do perfil após várias tentativas.",
-          variant: "destructive",
-        });
+        return false; // Nenhum dado
       }
     } catch (error) {
       console.error(`[RESULTS] Tentativa ${attempt}: Erro ao processar dados do Supabase:`, error);
       
-      // Se não for a última tentativa, tentar novamente após 10 segundos
-      if (attempt < 3) {
-        console.log(`[RESULTS] Agendando nova tentativa em 10 segundos...`);
-        setTimeout(() => {
-          setRetryCount(attempt);
-          fetchResultsFromSupabase(id, attempt + 1);
-        }, 10000);
-        return;
+      // Se for a última tentativa de todas (após as adicionais), exibir erro
+      if (attempt >= 7) { // 4 iniciais + 3 adicionais
+        setIsError(true);
+        setIsLoading(false);
+        
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro ao processar os dados do perfil",
+          variant: "destructive",
+        });
       }
       
-      setIsError(true);
-      setIsLoading(false);
-      
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao processar os dados do perfil",
-        variant: "destructive",
-      });
+      return false;
     }
   };
 
