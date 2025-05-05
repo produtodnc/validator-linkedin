@@ -5,15 +5,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const LoadingState = () => {
   const [progress, setProgress] = useState(0);
+  const [waitingMessage, setWaitingMessage] = useState("Aguarde enquanto processamos seu perfil do LinkedIn...");
   
   useEffect(() => {
     const startTime = Date.now();
-    const maxTime = 120000; // 2 minutos em milissegundos
+    const maxTime = 300000; // 5 minutos em milissegundos
     
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const newProgress = Math.min(Math.floor((elapsed / maxTime) * 100), 99);
       setProgress(newProgress);
+      
+      // Atualizar a mensagem com base no tempo decorrido
+      if (elapsed > 120000) { // Após 2 minutos
+        setWaitingMessage("Estamos finalizando a análise do seu perfil. Por favor, continue aguardando...");
+      } else if (elapsed > 60000) { // Após 1 minuto
+        setWaitingMessage("A análise do seu perfil está em andamento. Isso pode levar alguns minutos...");
+      }
       
       if (elapsed >= maxTime) {
         clearInterval(interval);
@@ -26,9 +34,9 @@ const LoadingState = () => {
   return (
     <div className="flex flex-col items-center justify-center p-12">
       <div className="h-12 w-12 border-4 border-t-[#0FA0CE] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-gray-600 mt-4">Aguarde enquanto processamos seu perfil do LinkedIn...</p>
+      <p className="text-gray-600 mt-4">{waitingMessage}</p>
       <p className="text-gray-500 text-sm mt-2">Enviamos sua solicitação para análise e estamos aguardando os resultados.</p>
-      <p className="text-gray-500 text-sm mt-1">Este processo pode levar até 2 minutos para ser concluído.</p>
+      <p className="text-gray-500 text-sm mt-1">Este processo pode levar até 5 minutos para ser concluído.</p>
       
       <div className="w-full mt-8">
         <Progress value={progress} className="h-2" />

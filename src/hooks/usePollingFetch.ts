@@ -22,6 +22,43 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
   const [dataReceived, setDataReceived] = useState<boolean>(false);
   const { toast } = useToast();
 
+  // Função para verificar se todos os campos de feedback estão preenchidos
+  const areAllFieldsFilled = (data: LinkedInProfile): boolean => {
+    // Verificar se todos os campos de feedback estão preenchidos
+    const requiredFields = [
+      'feedback_headline', 'feedback_headline_nota',
+      'feedback_sobre', 'feedback_sobre_nota',
+      'feedback_experience', 'feedback_experience_nota',
+      'feedback_projetos', 'feedback_projetos_nota',
+      'feedback_certificados', 'feedback_certificados_nota'
+    ];
+    
+    // Verifica se o dado existe e os campos obrigatórios estão preenchidos
+    return requiredFields.every(field => {
+      // Verifica o novo formato dos campos
+      if (data[field as keyof LinkedInProfile]) {
+        return true;
+      }
+      
+      // Verifica o formato antigo dos campos (para compatibilidade)
+      const oldFormatMapping: {[key: string]: string} = {
+        'feedback_headline': 'Headline_feedback',
+        'feedback_headline_nota': 'nota_headline',
+        'feedback_sobre': 'Sobre_feedback',
+        'feedback_sobre_nota': 'nota_sobre',
+        'feedback_experience': 'Experiencias_feedback',
+        'feedback_experience_nota': 'nota_experiencia',
+        'feedback_projetos': 'Projetos_feedback',
+        'feedback_projetos_nota': 'nota_projetos',
+        'feedback_certificados': 'Certificados_feedback',
+        'feedback_certificados_nota': 'nota_certificados'
+      };
+      
+      const oldField = oldFormatMapping[field];
+      return oldField && data[oldField as keyof LinkedInProfile];
+    });
+  };
+
   const checkForData = useCallback(async () => {
     try {
       console.log("[POLLING] Verificando dados para URL:", linkedinUrl);
@@ -40,16 +77,22 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         const data = await response.json();
         console.log("[POLLING] Dados recebidos do endpoint simulado:", data);
         
-        setProfile(data);
-        setIsLoading(false);
-        setDataReceived(true);
-        
-        toast({
-          title: "Análise concluída",
-          description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
-        });
-        
-        return true; // Dados recebidos, pode parar o polling
+        // Verificar se todos os campos de feedback estão preenchidos
+        if (areAllFieldsFilled(data)) {
+          setProfile(data);
+          setIsLoading(false);
+          setDataReceived(true);
+          
+          toast({
+            title: "Análise concluída",
+            description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
+          });
+          
+          return true; // Dados completos recebidos, pode parar o polling
+        } else {
+          console.log("[POLLING] Dados recebidos, mas alguns campos estão faltando");
+          return false; // Continuar polling até todos os campos serem preenchidos
+        }
       }
       
       // Verificar se encontramos algo no armazenamento global
@@ -57,18 +100,25 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
         console.log("[POLLING] Dados encontrados no armazenamento global:", window._receivedLinkedInData[linkedinUrl]);
         
         const data = window._receivedLinkedInData[linkedinUrl];
-        delete window._receivedLinkedInData[linkedinUrl]; // Limpamos para evitar duplicação
         
-        setProfile(data);
-        setIsLoading(false);
-        setDataReceived(true);
-        
-        toast({
-          title: "Análise concluída",
-          description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
-        });
+        // Verificar se todos os campos de feedback estão preenchidos
+        if (areAllFieldsFilled(data)) {
+          delete window._receivedLinkedInData[linkedinUrl]; // Limpamos para evitar duplicação
+          
+          setProfile(data);
+          setIsLoading(false);
+          setDataReceived(true);
+          
+          toast({
+            title: "Análise concluída",
+            description: "Os dados do seu perfil do LinkedIn foram processados com sucesso",
+          });
 
-        return true; // Dados recebidos, pode parar o polling
+          return true; // Dados completos recebidos, pode parar o polling
+        } else {
+          console.log("[POLLING] Dados encontrados no armazenamento global, mas alguns campos estão faltando");
+          return false; // Continuar polling até todos os campos serem preenchidos
+        }
       }
       
       return false; // Continuar polling
@@ -125,9 +175,9 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
           if (received && pollingInterval) {
             clearInterval(pollingInterval);
           }
-        }, 3000);
+        }, 3000); // Verificar a cada 3 segundos
         
-        // Timeout após 120 segundos para evitar polling infinito
+        // Aumentar o timeout para 5 minutos (300 segundos) para dar mais tempo
         timeoutId = setTimeout(() => {
           if (pollingInterval) {
             clearInterval(pollingInterval);
@@ -139,11 +189,11 @@ export const usePollingFetch = (linkedinUrl: string): PollingFetchResult => {
             
             toast({
               title: "Tempo esgotado",
-              description: "Não foi possível obter os dados do perfil após várias tentativas",
+              description: "Não foi possível obter todos os dados do perfil após várias tentativas",
               variant: "destructive",
             });
           }
-        }, 120000); // 120 segundos (2 minutos)
+        }, 300000); // 300 segundos (5 minutos)
       }
     };
     
