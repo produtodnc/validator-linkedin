@@ -5,6 +5,7 @@ import LoadingState from "@/components/results/LoadingState";
 import ErrorState from "@/components/results/ErrorState";
 import NoDataState from "@/components/results/NoDataState";
 import ProfileScoreDisplay from "@/components/results/ProfileScoreDisplay";
+import FeedbackDisplay from "@/components/results/FeedbackDisplay";
 import { LinkedInProfile } from "@/services/linkedinService";
 
 export interface ResultContentProps {
@@ -49,7 +50,16 @@ const ResultContent: React.FC<ResultContentProps> = ({
           </AlertDescription>
         </Alert>
       )}
-      <ProfileScoreDisplay profile={profile} />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <ProfileScoreDisplay profile={profile} />
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <FeedbackDisplay profile={profile} />
+        </div>
+      </div>
     </>
   );
 };

@@ -1,9 +1,7 @@
 
 import React from "react";
 import { LinkedInProfile } from "@/services/linkedinService";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 
 interface ProfileScoreDisplayProps {
@@ -87,17 +85,6 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
         <ScoreItem label="Projetos" score={projetosScore} />
         <ScoreItem label="Certificados" score={certificadosScore} />
       </div>
-      
-      {profile.suggestedImprovements && profile.suggestedImprovements.length > 0 && (
-        <Card className="p-6 shadow-md mt-8">
-          <h3 className="text-xl font-semibold mb-4">Pontos para melhoria</h3>
-          <ul className="list-disc pl-5 space-y-2">
-            {profile.suggestedImprovements.map((suggestion, index) => (
-              <li key={index} className="text-gray-700">{suggestion}</li>
-            ))}
-          </ul>
-        </Card>
-      )}
       
       <div className="flex justify-center mt-8">
         <Button 

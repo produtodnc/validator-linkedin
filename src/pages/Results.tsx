@@ -17,7 +17,7 @@ const Results = () => {
       <Header />
       
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-12">
-        <div className="max-w-2xl w-full">
+        <div className="max-w-7xl w-full">
           <h1 className="text-3xl font-bold mb-8 text-center text-[#1A1F2C]">Resultados da Validação</h1>
           
           <ResultsContainer linkedinUrl={linkedinUrl}>
