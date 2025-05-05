@@ -123,16 +123,34 @@ export type Database = {
       linkedin_links: {
         Row: {
           created_at: string
+          feedback_experience: string | null
+          feedback_experience_nota: number | null
+          feedback_headline: string | null
+          feedback_headline_nota: number | null
+          feedback_sobre: string | null
+          feedback_sobre_nota: number | null
           id: string
           linkedin_url: string
         }
         Insert: {
           created_at?: string
+          feedback_experience?: string | null
+          feedback_experience_nota?: number | null
+          feedback_headline?: string | null
+          feedback_headline_nota?: number | null
+          feedback_sobre?: string | null
+          feedback_sobre_nota?: number | null
           id?: string
           linkedin_url: string
         }
         Update: {
           created_at?: string
+          feedback_experience?: string | null
+          feedback_experience_nota?: number | null
+          feedback_headline?: string | null
+          feedback_headline_nota?: number | null
+          feedback_sobre?: string | null
+          feedback_sobre_nota?: number | null
           id?: string
           linkedin_url?: string
         }

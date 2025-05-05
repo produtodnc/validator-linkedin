@@ -10,7 +10,7 @@ export interface LinkedInProfile {
   connections: string;
   completionScore: number;
   suggestedImprovements: string[];
-  // Campos adicionais para os dados recebidos
+  // Campos adicionais para os dados de feedback
   Headline_feedback?: string;
   nota_headline?: number;
   Sobre_feedback?: string;
