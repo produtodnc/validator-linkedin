@@ -39,7 +39,8 @@ export interface ApiResponse {
   data: LinkedInProfile | null;
   error?: string;
   status?: number;
-  message?: string; // Propriedade message incluída na interface
+  message?: string;
+  recordId?: string; // Add recordId to the response interface
 }
 
 // URL do webhook para enviar os dados iniciais (apenas a URL do LinkedIn)
@@ -111,7 +112,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       return { 
         data: null, 
         status: response.status,
-        // Adicionamos qualquer mensagem que o webhook possa retornar
+        recordId: recordId, // Return the record ID
         message: responseData.message || "URL enviada com sucesso"
       };
     } catch (e) {
@@ -119,6 +120,7 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       return { 
         data: null, 
         status: response.status,
+        recordId: recordId, // Return the record ID even if webhook doesn't return JSON
         message: "URL enviada com sucesso, sem dados retornados"
       };
     }
