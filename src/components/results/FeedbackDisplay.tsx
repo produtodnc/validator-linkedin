@@ -65,72 +65,82 @@ const FeedbackDisplay = ({
       </div>
       
       <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="headline" className="mb-4 rounded-full overflow-hidden bg-gray-50">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Headline</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${headlineScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {headlineScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50">
+        <AccordionItem value="headline" className="mb-4 border-none">
+          <div className="rounded-t-full bg-gray-50">
+            <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Headline</span>
+                <span className={`px-3 py-1 rounded-full text-sm ${headlineScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                  {headlineScore}/100
+                </span>
+              </div>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-6 py-4 bg-gray-50 rounded-b-lg">
             <p className="text-gray-700">{headlineFeedback}</p>
           </AccordionContent>
         </AccordionItem>
         
-        <AccordionItem value="sobre" className="mb-4 rounded-full overflow-hidden bg-gray-50">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Sobre</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${sobreScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {sobreScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50">
+        <AccordionItem value="sobre" className="mb-4 border-none">
+          <div className="rounded-t-full bg-gray-50">
+            <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Sobre</span>
+                <span className={`px-3 py-1 rounded-full text-sm ${sobreScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                  {sobreScore}/100
+                </span>
+              </div>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-6 py-4 bg-gray-50 rounded-b-lg">
             <p className="text-gray-700">{sobreFeedback}</p>
           </AccordionContent>
         </AccordionItem>
         
-        <AccordionItem value="experiencia" className="mb-4 rounded-full overflow-hidden bg-gray-50">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Experiência</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${experienceScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {experienceScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50">
+        <AccordionItem value="experiencia" className="mb-4 border-none">
+          <div className="rounded-t-full bg-gray-50">
+            <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Experiência</span>
+                <span className={`px-3 py-1 rounded-full text-sm ${experienceScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                  {experienceScore}/100
+                </span>
+              </div>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-6 py-4 bg-gray-50 rounded-b-lg">
             <p className="text-gray-700">{experienceFeedback}</p>
           </AccordionContent>
         </AccordionItem>
         
-        <AccordionItem value="projetos" className="mb-4 rounded-full overflow-hidden bg-gray-50">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Projetos</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {projetosScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50">
+        <AccordionItem value="projetos" className="mb-4 border-none">
+          <div className="rounded-t-full bg-gray-50">
+            <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Projetos</span>
+                <span className={`px-3 py-1 rounded-full text-sm ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                  {projetosScore}/100
+                </span>
+              </div>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-6 py-4 bg-gray-50 rounded-b-lg">
             <p className="text-gray-700">{projetosFeedback}</p>
           </AccordionContent>
         </AccordionItem>
         
-        <AccordionItem value="certificados" className="mb-4 rounded-full overflow-hidden bg-gray-50">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Certificados</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${certificadosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {certificadosScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50">
+        <AccordionItem value="certificados" className="mb-4 border-none">
+          <div className="rounded-t-full bg-gray-50">
+            <AccordionTrigger className="flex items-center justify-between px-6 py-5 hover:bg-gray-100 rounded-full">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Certificados</span>
+                <span className={`px-3 py-1 rounded-full text-sm ${certificadosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                  {certificadosScore}/100
+                </span>
+              </div>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-6 py-4 bg-gray-50 rounded-b-lg">
             <p className="text-gray-700">{certificadosFeedback}</p>
           </AccordionContent>
         </AccordionItem>
