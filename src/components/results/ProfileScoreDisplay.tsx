@@ -74,9 +74,9 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
       <div className="flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-8 text-center text-[#1A1F2C]">Meu score</h2>
         
-        {/* Circular progress indicator with animation */}
+        {/* Circular progress indicator with animation - removed the rotation animation */}
         <div className="relative w-40 h-40 mb-10">
-          <svg className="w-full h-full animate-[spin_8s_linear_infinite]" viewBox="0 0 100 100">
+          <svg className="w-full h-full" viewBox="0 0 100 100">
             <circle 
               cx="50" 
               cy="50" 
