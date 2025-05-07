@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { LinkedInProfile } from "@/services/linkedinService";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 interface ProfileScoreDisplayProps {
   profile: LinkedInProfile;
@@ -28,7 +26,6 @@ const ScoreItem = ({ label, score }: ScoreItemProps) => {
 };
 
 const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
-  const navigate = useNavigate();
   const [animatedScore, setAnimatedScore] = useState(0);
   
   // Convert the 0-5 scale scores to 0-100 scale
@@ -70,7 +67,7 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
   }, [completionScore]);
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mb-12">
       <div className="flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-8 text-center text-[#1A1F2C]">Meu score</h2>
         
@@ -112,7 +109,6 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
         <ScoreItem label="Projetos" score={projetosScore} />
         <ScoreItem label="Certificados" score={certificadosScore} />
       </div>
-      
     </div>
   );
 };
