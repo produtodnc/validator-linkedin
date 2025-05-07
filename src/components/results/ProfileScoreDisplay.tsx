@@ -57,6 +57,14 @@ const ProfileScoreDisplay = ({ profile }: ProfileScoreDisplayProps) => {
     const increment = completionScore / steps;
     let currentScore = 0;
     
+    const timer = setInterval(() => {
+      currentScore += increment;
+      if (currentScore >= completionScore) {
+        currentScore = completionScore;
+        clearInterval(timer);
+      }
+      setAnimatedScore(Math.round(currentScore));
+    }, interval);
     
     return () => clearInterval(timer);
   }, [completionScore]);
