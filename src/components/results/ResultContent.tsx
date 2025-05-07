@@ -42,7 +42,6 @@ const ResultContent: React.FC<ResultContentProps> = ({
     <div className="flex justify-center">
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-md p-6 border border-solid border-gray-200">
         <div className="space-y-8">
-          <h2 className="text-2xl font-bold text-center text-[#1A1F2C] mb-8">Resultados da Análise</h2>
           <FeedbackDisplay profile={profile} />
         </div>
       </div>
