@@ -1,7 +1,8 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { LinkedInProfile } from "@/services/linkedinService";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 interface FeedbackDisplayProps {
   profile: LinkedInProfile;
@@ -37,6 +38,23 @@ const FeedbackDisplay = ({
     (headlineScore + sobreScore + experienceScore + projetosScore + certificadosScore) / 5
   );
 
+  // State to track open/closed sections
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    headline: false,
+    sobre: false,
+    experiencia: false,
+    projetos: false,
+    certificados: false
+  });
+
+  // Toggle section state
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-center mb-10">
@@ -64,77 +82,127 @@ const FeedbackDisplay = ({
         <h3 className="text-xl font-semibold text-gray-700 mt-2">Score Geral</h3>
       </div>
       
-      <Accordion type="single" collapsible className="w-full space-y-4">
-        <AccordionItem value="headline" className="border-none overflow-hidden">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full data-[state=open]:rounded-b-none">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Headline</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${headlineScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {headlineScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50 mt-0 rounded-b-lg">
-            <p className="text-gray-700">{headlineFeedback}</p>
-          </AccordionContent>
-        </AccordionItem>
-        
-        <AccordionItem value="sobre" className="border-none overflow-hidden">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full data-[state=open]:rounded-b-none">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Sobre</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${sobreScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {sobreScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50 mt-0 rounded-b-lg">
-            <p className="text-gray-700">{sobreFeedback}</p>
-          </AccordionContent>
-        </AccordionItem>
-        
-        <AccordionItem value="experiencia" className="border-none overflow-hidden">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full data-[state=open]:rounded-b-none">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Experiência</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${experienceScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {experienceScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50 mt-0 rounded-b-lg">
-            <p className="text-gray-700">{experienceFeedback}</p>
-          </AccordionContent>
-        </AccordionItem>
-        
-        <AccordionItem value="projetos" className="border-none overflow-hidden">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full data-[state=open]:rounded-b-none">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Projetos</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {projetosScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50 mt-0 rounded-b-lg">
-            <p className="text-gray-700">{projetosFeedback}</p>
-          </AccordionContent>
-        </AccordionItem>
-        
-        <AccordionItem value="certificados" className="border-none overflow-hidden">
-          <AccordionTrigger className="flex items-center justify-between px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full data-[state=open]:rounded-b-none">
-            <div className="flex items-center justify-between w-full pr-4">
-              <span className="font-semibold text-lg text-gray-800">Certificados</span>
-              <span className={`px-3 py-1 rounded-full text-sm ${certificadosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-                {certificadosScore}/100
-              </span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 py-4 bg-gray-50 mt-0 rounded-b-lg">
-            <p className="text-gray-700">{certificadosFeedback}</p>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <div className="space-y-4">
+        {/* Headline Section */}
+        <div className="section-container">
+          <Collapsible 
+            open={openSections.headline} 
+            onOpenChange={() => toggleSection("headline")}
+            className="w-full"
+          >
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Headline</span>
+                <div className="flex items-center">
+                  <span className={`px-3 py-1 rounded-full text-sm mr-2 ${headlineScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                    {headlineScore}/100
+                  </span>
+                  <ChevronDown className={`h-5 w-5 transition-transform ${openSections.headline ? "transform rotate-180" : ""}`} />
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 px-6 py-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-700">{headlineFeedback}</p>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+
+        {/* Sobre Section */}
+        <div className="section-container">
+          <Collapsible 
+            open={openSections.sobre} 
+            onOpenChange={() => toggleSection("sobre")}
+            className="w-full"
+          >
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Sobre</span>
+                <div className="flex items-center">
+                  <span className={`px-3 py-1 rounded-full text-sm mr-2 ${sobreScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                    {sobreScore}/100
+                  </span>
+                  <ChevronDown className={`h-5 w-5 transition-transform ${openSections.sobre ? "transform rotate-180" : ""}`} />
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 px-6 py-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-700">{sobreFeedback}</p>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+
+        {/* Experiência Section */}
+        <div className="section-container">
+          <Collapsible 
+            open={openSections.experiencia} 
+            onOpenChange={() => toggleSection("experiencia")}
+            className="w-full"
+          >
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Experiência</span>
+                <div className="flex items-center">
+                  <span className={`px-3 py-1 rounded-full text-sm mr-2 ${experienceScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                    {experienceScore}/100
+                  </span>
+                  <ChevronDown className={`h-5 w-5 transition-transform ${openSections.experiencia ? "transform rotate-180" : ""}`} />
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 px-6 py-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-700">{experienceFeedback}</p>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+
+        {/* Projetos Section */}
+        <div className="section-container">
+          <Collapsible 
+            open={openSections.projetos} 
+            onOpenChange={() => toggleSection("projetos")}
+            className="w-full"
+          >
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Projetos</span>
+                <div className="flex items-center">
+                  <span className={`px-3 py-1 rounded-full text-sm mr-2 ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                    {projetosScore}/100
+                  </span>
+                  <ChevronDown className={`h-5 w-5 transition-transform ${openSections.projetos ? "transform rotate-180" : ""}`} />
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 px-6 py-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-700">{projetosFeedback}</p>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+
+        {/* Certificados Section */}
+        <div className="section-container">
+          <Collapsible 
+            open={openSections.certificados} 
+            onOpenChange={() => toggleSection("certificados")}
+            className="w-full"
+          >
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
+              <div className="flex items-center justify-between w-full pr-4">
+                <span className="font-semibold text-lg text-gray-800">Certificados</span>
+                <div className="flex items-center">
+                  <span className={`px-3 py-1 rounded-full text-sm mr-2 ${certificadosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                    {certificadosScore}/100
+                  </span>
+                  <ChevronDown className={`h-5 w-5 transition-transform ${openSections.certificados ? "transform rotate-180" : ""}`} />
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 px-6 py-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-700">{certificadosFeedback}</p>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </div>
     </div>
   );
 };
