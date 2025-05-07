@@ -44,7 +44,7 @@ const FeedbackDisplay = ({
         </AccordionItem>
         
         <AccordionItem value="sobre" className="mt-3">
-          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-lg rounded-2xl">
             <div className="flex items-center justify-between w-full pr-4">
               <span className="font-semibold text-lg text-gray-800">Sobre</span>
               <span className={`px-3 py-1 rounded-full text-sm ${sobreScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
@@ -58,7 +58,7 @@ const FeedbackDisplay = ({
         </AccordionItem>
         
         <AccordionItem value="experiencia" className="mt-3">
-          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-lg rounded-2xl">
             <div className="flex items-center justify-between w-full pr-4">
               <span className="font-semibold text-lg text-gray-800">Experiência</span>
               <span className={`px-3 py-1 rounded-full text-sm ${experienceScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
@@ -72,7 +72,7 @@ const FeedbackDisplay = ({
         </AccordionItem>
         
         <AccordionItem value="projetos" className="mt-3">
-          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-lg rounded-2xl">
             <div className="flex items-center justify-between w-full pr-4">
               <span className="font-semibold text-lg text-gray-800">Projetos</span>
               <span className={`px-3 py-1 rounded-full text-sm ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
@@ -86,7 +86,7 @@ const FeedbackDisplay = ({
         </AccordionItem>
         
         <AccordionItem value="certificados" className="mt-3">
-          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-lg rounded-2xl">
             <div className="flex items-center justify-between w-full pr-4">
               <span className="font-semibold text-lg text-gray-800">Certificados</span>
               <span className={`px-3 py-1 rounded-full text-sm ${certificadosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
