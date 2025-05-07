@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,12 +54,11 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
       </p>
       
       <div className="w-full mt-8">
-        <Progress value={progress} className="h-2" />
-        <p className="text-blue-500 text-xs mt-1 text-right">{progress}%</p>
+        <Progress value={progress} className="h-2 bg-gray-200">
+          <div className="h-full bg-[#1A1F2C]"></div>
+        </Progress>
+        <p className="text-[#1A1F2C] text-xs mt-1 text-right">{progress}%</p>
       </div>
-      
-
-   
     </div>
   );
 };

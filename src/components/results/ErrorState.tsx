@@ -12,7 +12,7 @@ const ErrorState = () => {
       <p className="text-gray-500 text-sm mb-4">Nosso endpoint não conseguiu receber os dados. Por favor, tente novamente.</p>
       <Button 
         onClick={() => navigate("/")} 
-        className="mt-4 bg-[#0FA0CE] hover:bg-[#1EAEDB] text-white"
+        className="mt-4 bg-[#1A1F2C] hover:bg-[#333845] text-white"
       >
         Voltar e tentar novamente
       </Button>
