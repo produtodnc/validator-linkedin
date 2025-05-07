@@ -30,7 +30,7 @@ const FeedbackDisplay = ({
   return <div className="space-y-4">
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="headline">
-          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-lg rounded-md">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-lg rounded-2xl">
             <div className="flex items-center justify-between w-full pr-4">
               <span className="font-semibold text-lg text-gray-800">Headline</span>
               <span className={`px-3 py-1 rounded-full text-sm ${headlineScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
