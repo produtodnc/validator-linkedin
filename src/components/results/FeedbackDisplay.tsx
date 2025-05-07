@@ -1,19 +1,15 @@
-
 import React, { useState } from "react";
 import { LinkedInProfile } from "@/services/linkedinService";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
-
 interface FeedbackDisplayProps {
   profile: LinkedInProfile;
 }
-
 const FeedbackDisplay = ({
   profile
 }: FeedbackDisplayProps) => {
   // Helper function to get feedback text from profile data (handling both old and new formats)
   const getFeedback = (newFormat: string | undefined, oldFormat: string | undefined) => newFormat || oldFormat || "Sem feedback disponível";
-  
   const headlineFeedback = getFeedback(profile.feedback_headline, profile.Headline_feedback);
   const sobreFeedback = getFeedback(profile.feedback_sobre, profile.Sobre_feedback);
   const experienceFeedback = getFeedback(profile.feedback_experience, profile.Experiencias_feedback);
@@ -34,9 +30,7 @@ const FeedbackDisplay = ({
   const certificadosScore = convertScore(profile.feedback_certificados_nota || profile.nota_certificados);
 
   // Calculate the overall score based on all individual scores
-  const overallScore = Math.round(
-    (headlineScore + sobreScore + experienceScore + projetosScore + certificadosScore) / 5
-  );
+  const overallScore = Math.round((headlineScore + sobreScore + experienceScore + projetosScore + certificadosScore) / 5);
 
   // State to track open/closed sections
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -54,26 +48,12 @@ const FeedbackDisplay = ({
       [section]: !prev[section]
     }));
   };
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <div className="flex flex-col items-center mb-10">
         <div className="relative w-40 h-40 mb-4">
           <svg className="w-full h-full" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="40" fill="none" stroke="#e6e6e6" strokeWidth="10" />
-            <circle 
-              cx="50" 
-              cy="50" 
-              r="40" 
-              fill="none" 
-              stroke="#007bff" 
-              strokeWidth="10" 
-              strokeDasharray={`${251.2 * overallScore / 100} 251.2`} 
-              strokeDashoffset="0" 
-              strokeLinecap="round" 
-              transform="rotate(-90 50 50)" 
-              className="transition-all duration-1000 ease-out" 
-            />
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#007bff" strokeWidth="10" strokeDasharray={`${251.2 * overallScore / 100} 251.2`} strokeDashoffset="0" strokeLinecap="round" transform="rotate(-90 50 50)" className="transition-all duration-1000 ease-out" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-3xl font-bold">{overallScore}%</span>
@@ -85,12 +65,8 @@ const FeedbackDisplay = ({
       <div className="space-y-4">
         {/* Headline Section */}
         <div className="section-container">
-          <Collapsible 
-            open={openSections.headline} 
-            onOpenChange={() => toggleSection("headline")}
-            className="w-full"
-          >
-            <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
+          <Collapsible open={openSections.headline} onOpenChange={() => toggleSection("headline")} className="w-full">
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 transition-all rounded-full">
               <div className="flex items-center justify-between w-full pr-4">
                 <span className="font-semibold text-lg text-gray-800">Headline</span>
                 <div className="flex items-center">
@@ -101,7 +77,7 @@ const FeedbackDisplay = ({
                 </div>
               </div>
             </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 px-6 py-4 bg-gray-50 rounded-lg">
+            <CollapsibleContent className="mt-2 px-6 py-4 bg-gray-50 rounded-3xl">
               <p className="text-gray-700">{headlineFeedback}</p>
             </CollapsibleContent>
           </Collapsible>
@@ -109,11 +85,7 @@ const FeedbackDisplay = ({
 
         {/* Sobre Section */}
         <div className="section-container">
-          <Collapsible 
-            open={openSections.sobre} 
-            onOpenChange={() => toggleSection("sobre")}
-            className="w-full"
-          >
+          <Collapsible open={openSections.sobre} onOpenChange={() => toggleSection("sobre")} className="w-full">
             <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
               <div className="flex items-center justify-between w-full pr-4">
                 <span className="font-semibold text-lg text-gray-800">Sobre</span>
@@ -133,11 +105,7 @@ const FeedbackDisplay = ({
 
         {/* Experiência Section */}
         <div className="section-container">
-          <Collapsible 
-            open={openSections.experiencia} 
-            onOpenChange={() => toggleSection("experiencia")}
-            className="w-full"
-          >
+          <Collapsible open={openSections.experiencia} onOpenChange={() => toggleSection("experiencia")} className="w-full">
             <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
               <div className="flex items-center justify-between w-full pr-4">
                 <span className="font-semibold text-lg text-gray-800">Experiência</span>
@@ -157,11 +125,7 @@ const FeedbackDisplay = ({
 
         {/* Projetos Section */}
         <div className="section-container">
-          <Collapsible 
-            open={openSections.projetos} 
-            onOpenChange={() => toggleSection("projetos")}
-            className="w-full"
-          >
+          <Collapsible open={openSections.projetos} onOpenChange={() => toggleSection("projetos")} className="w-full">
             <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
               <div className="flex items-center justify-between w-full pr-4">
                 <span className="font-semibold text-lg text-gray-800">Projetos</span>
@@ -181,11 +145,7 @@ const FeedbackDisplay = ({
 
         {/* Certificados Section */}
         <div className="section-container">
-          <Collapsible 
-            open={openSections.certificados} 
-            onOpenChange={() => toggleSection("certificados")}
-            className="w-full"
-          >
+          <Collapsible open={openSections.certificados} onOpenChange={() => toggleSection("certificados")} className="w-full">
             <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
               <div className="flex items-center justify-between w-full pr-4">
                 <span className="font-semibold text-lg text-gray-800">Certificados</span>
@@ -203,8 +163,6 @@ const FeedbackDisplay = ({
           </Collapsible>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default FeedbackDisplay;
