@@ -56,7 +56,7 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
       
       <div className="w-full mt-8">
         <Progress value={progress} className="h-2" />
-        <p className="text-gray-500 text-xs mt-1 text-right">{progress}%</p>
+        <p className="text-blue-500 text-xs mt-1 text-right">{progress}%</p>
       </div>
       
 
