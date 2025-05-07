@@ -59,31 +59,8 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
         <p className="text-gray-500 text-xs mt-1 text-right">{progress}%</p>
       </div>
       
-      <div className="w-full mt-8 space-y-3">
-        <p className="text-gray-600 font-medium">Aguardando dados do perfil</p>
-        <div className="space-y-2">
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 w-24">Headline</span>
-            <Skeleton className="h-4 w-full" />
-          </div>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 w-24">Sobre</span>
-            <Skeleton className="h-4 w-full" />
-          </div>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 w-24">Experiência</span>
-            <Skeleton className="h-4 w-full" />
-          </div>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 w-24">Projetos</span>
-            <Skeleton className="h-4 w-full" />
-          </div>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 w-24">Certificados</span>
-            <Skeleton className="h-4 w-full" />
-          </div>
-        </div>
-      </div>
+
+   
     </div>
   );
 };
