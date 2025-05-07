@@ -42,8 +42,10 @@ const ResultContent: React.FC<ResultContentProps> = ({
   return (
     <div className="flex justify-center">
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-md p-6 border border-solid border-gray-200">
-        <ProfileScoreDisplay profile={profile} />
-        <FeedbackDisplay profile={profile} />
+        <div className="space-y-8">
+          <ProfileScoreDisplay profile={profile} />
+          <FeedbackDisplay profile={profile} />
+        </div>
       </div>
     </div>
   );

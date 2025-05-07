@@ -1,6 +1,7 @@
 
 import React from "react";
 import { LinkedInProfile } from "@/services/linkedinService";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface FeedbackDisplayProps {
   profile: LinkedInProfile;
@@ -33,71 +34,78 @@ const FeedbackDisplay = ({ profile }: FeedbackDisplayProps) => {
   const certificadosScore = convertScore(profile.feedback_certificados_nota || profile.nota_certificados);
   
   return (
-    <div className="space-y-6">
-      {/* Headline section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-lg">Headline</h4>
-          <span className={`px-3 py-1 rounded-full text-sm ${headlineScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-            {headlineScore}/100
-          </span>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-700">{headlineFeedback}</p>
-        </div>
-      </div>
-      
-      {/* Sobre section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-lg">Sobre</h4>
-          <span className={`px-3 py-1 rounded-full text-sm ${sobreScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-            {sobreScore}/100
-          </span>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-700">{sobreFeedback}</p>
-        </div>
-      </div>
-      
-      {/* Experiência section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-lg">Experiência</h4>
-          <span className={`px-3 py-1 rounded-full text-sm ${experienceScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-            {experienceScore}/100
-          </span>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-700">{experienceFeedback}</p>
-        </div>
-      </div>
-      
-      {/* Projetos section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-lg">Projetos</h4>
-          <span className={`px-3 py-1 rounded-full text-sm ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-            {projetosScore}/100
-          </span>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-700">{projetosFeedback}</p>
-        </div>
-      </div>
-      
-      {/* Certificados section */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-lg">Certificados</h4>
-          <span className={`px-3 py-1 rounded-full text-sm ${certificadosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
-            {certificadosScore}/100
-          </span>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-700">{certificadosFeedback}</p>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="headline">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+            <div className="flex items-center justify-between w-full pr-4">
+              <span className="font-semibold text-lg text-gray-800">Headline</span>
+              <span className={`px-3 py-1 rounded-full text-sm ${headlineScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                {headlineScore}/100
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 py-3 bg-gray-50 mt-1 rounded-lg">
+            <p className="text-gray-700">{headlineFeedback}</p>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="sobre" className="mt-3">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+            <div className="flex items-center justify-between w-full pr-4">
+              <span className="font-semibold text-lg text-gray-800">Sobre</span>
+              <span className={`px-3 py-1 rounded-full text-sm ${sobreScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                {sobreScore}/100
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 py-3 bg-gray-50 mt-1 rounded-lg">
+            <p className="text-gray-700">{sobreFeedback}</p>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="experiencia" className="mt-3">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+            <div className="flex items-center justify-between w-full pr-4">
+              <span className="font-semibold text-lg text-gray-800">Experiência</span>
+              <span className={`px-3 py-1 rounded-full text-sm ${experienceScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                {experienceScore}/100
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 py-3 bg-gray-50 mt-1 rounded-lg">
+            <p className="text-gray-700">{experienceFeedback}</p>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="projetos" className="mt-3">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+            <div className="flex items-center justify-between w-full pr-4">
+              <span className="font-semibold text-lg text-gray-800">Projetos</span>
+              <span className={`px-3 py-1 rounded-full text-sm ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                {projetosScore}/100
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 py-3 bg-gray-50 mt-1 rounded-lg">
+            <p className="text-gray-700">{projetosFeedback}</p>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="certificados" className="mt-3">
+          <AccordionTrigger className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+            <div className="flex items-center justify-between w-full pr-4">
+              <span className="font-semibold text-lg text-gray-800">Certificados</span>
+              <span className={`px-3 py-1 rounded-full text-sm ${certificadosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
+                {certificadosScore}/100
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 py-3 bg-gray-50 mt-1 rounded-lg">
+            <p className="text-gray-700">{certificadosFeedback}</p>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };
