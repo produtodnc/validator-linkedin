@@ -1,8 +1,8 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { sendUrlToWebhook } from "@/services/linkedinService";
+import { sendUrlToWebhook, cleanupOldStorageKeys } from "@/services/linkedinService";
+import { saveCurrentProfileUrl, getRecordIdFromStorage } from "@/services/linkedinService";
 
 /**
  * Hook for processing LinkedIn URL submissions
@@ -63,22 +63,20 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string, userEmail: string |
     currentUrlRef.current = linkedinUrl;
     
     // Primeiro tentamos recuperar o recordId do localStorage e sessionStorage
-    let storedRecordId = localStorage.getItem(`recordId_${linkedinUrl}`) || 
-                         sessionStorage.getItem(`recordId_${linkedinUrl}`);
+    let storedRecordId = getRecordIdFromStorage(linkedinUrl);
                          
     if (storedRecordId) {
-      console.log("[URL_PROCESSOR] Recuperando ID do registro do storage:", storedRecordId);
+      console.log("[URL_PROCESSOR] Recovering record ID from storage:", storedRecordId);
       setRecordId(storedRecordId);
       setIsProcessing(false);
       
-      // Limpar chaves antigas para evitar acúmulo no storage
+      // Clean up old keys to avoid storage bloat
       cleanupOldStorageKeys();
       return;
     }
     
     // Armazenar URL na sessão para identificação
-    localStorage.setItem('currentProfileUrl', linkedinUrl);
-    sessionStorage.setItem('currentProfileUrl', linkedinUrl);
+    saveCurrentProfileUrl(linkedinUrl);
     
     console.log("[URL_PROCESSOR] Iniciando análise para URL:", linkedinUrl);
     console.log("[URL_PROCESSOR] Email do usuário:", userEmail);
@@ -128,7 +126,7 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string, userEmail: string |
             setRecordId(response.recordId);
             console.log("[URL_PROCESSOR] ID do registro salvo:", response.recordId);
             
-            // Limpar chaves antigas para evitar acúmulo no storage
+            // Clean up old keys to avoid storage bloat
             cleanupOldStorageKeys();
             
             toast({
