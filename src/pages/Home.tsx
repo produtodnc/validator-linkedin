@@ -74,7 +74,7 @@ const Home = () => {
                 <div className="relative flex-grow">
                   <Input type="url" placeholder="https://www.linkedin.com/in/seu-perfil/" value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)} className="h-16 pr-16 pl-6 rounded-full shadow-lg w-full text-gray-700 bg-white" required />
                 </div>
-                <Button type="submit" disabled={isLoading} className="absolute right-1 rounded-full w-12 h-12 bg-[#0A66C2] hover:bg-[#004182] flex items-center justify-center">
+                <Button type="submit" disabled={isLoading} className="absolute right-1 rounded-full w-12 h-12 flex items-center justify-center bg-blue-950 hover:bg-blue-800">
                   {isLoading ? <span className="h-5 w-5 border-t-2 border-r-2 border-white rounded-full animate-spin" /> : <ArrowRight className="text-white" size={24} />}
                 </Button>
               </div>
