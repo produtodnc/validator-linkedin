@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { sendUrlToWebhook } from "@/services/linkedinService";
+import { sendUrlToWebhook, saveCurrentProfileUrl } from "@/services/linkedinService";
 import EmailModal from "@/components/EmailModal";
 
 const Home = () => {
@@ -23,20 +23,24 @@ const Home = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const emailParam = queryParams.get("email");
-    const showHeaderParam = queryParams.get("show-header");
-
+    
     // Store email from URL parameter if present
     if (emailParam) {
       setUserEmail(emailParam);
       
-      // If show-header=true, redirect to results page automatically
+      // Check if there's also a show-header parameter
+      const showHeaderParam = queryParams.get("show-header");
+      
+      // If show-header=true, prepare for automatic processing
       if (showHeaderParam === "true") {
         // Check if there's a stored LinkedIn URL in localStorage
         const storedUrl = localStorage.getItem('currentProfileUrl');
         if (storedUrl) {
+          // If we have both email and a stored URL, redirect to results automatically
           navigate("/resultados", {
             state: {
-              linkedinUrl: storedUrl
+              linkedinUrl: storedUrl,
+              userEmail: emailParam
             }
           });
         }
@@ -56,6 +60,9 @@ const Home = () => {
       });
       return;
     }
+
+    // Save the LinkedIn URL to localStorage for future reference
+    saveCurrentProfileUrl(linkedinUrl);
 
     // If we don't have the user's email yet, show the email modal
     if (!userEmail) {

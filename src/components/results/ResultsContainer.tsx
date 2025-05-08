@@ -18,7 +18,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, userEm
   
   // Update current URL if the prop changes
   useEffect(() => {
-    if (linkedinUrl !== currentUrl) {
+    if (linkedinUrl && linkedinUrl !== currentUrl) {
       console.log("[RESULTS_CONTAINER] URL mudou de", currentUrl, "para", linkedinUrl);
       previousUrlRef.current = currentUrl;
       setCurrentUrl(linkedinUrl);

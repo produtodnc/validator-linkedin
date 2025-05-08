@@ -34,6 +34,7 @@ const Results = () => {
     // Check URL from location state (from navigation)
     const state = location.state as { linkedinUrl?: string; userEmail?: string } | null;
     if (state?.linkedinUrl) {
+      console.log("Got URL from navigation state:", state.linkedinUrl);
       setLinkedinUrl(state.linkedinUrl);
       
       // Also get email from state if available
@@ -47,11 +48,13 @@ const Results = () => {
     // If no URL in state, try to get from localStorage
     const storedUrl = localStorage.getItem('currentProfileUrl');
     if (storedUrl) {
+      console.log("Got URL from localStorage:", storedUrl);
       setLinkedinUrl(storedUrl);
       return;
     }
 
-    // If we couldn't get the URL, redirect to home
+    // If we couldn't get the URL, show a warning and let the user continue
+    // Only redirect to home if no email parameter is present
     if (!emailParam) {
       toast({
         title: "Sem dados",
