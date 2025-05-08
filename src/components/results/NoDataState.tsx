@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface NoDataStateProps {
@@ -10,6 +10,11 @@ interface NoDataStateProps {
 
 const NoDataState = ({ message }: NoDataStateProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if we're in the embedded view
+  const queryParams = new URLSearchParams(location.search);
+  const showHeader = queryParams.get("show-header") !== "false";
   
   return (
     <div className="text-center p-8">
@@ -30,12 +35,14 @@ const NoDataState = ({ message }: NoDataStateProps) => {
         <li className="mb-2">Houve um problema temporário na comunicação com nossos serviços</li>
       </ul>
       
-      <Button 
-        onClick={() => navigate("/")} 
-        className="mt-4 bg-[#0FA0CE] hover:bg-[#1EAEDB] text-white"
-      >
-        Voltar para a página inicial
-      </Button>
+      {showHeader && (
+        <Button 
+          onClick={() => navigate("/")} 
+          className="mt-4 bg-[#0FA0CE] hover:bg-[#1EAEDB] text-white"
+        >
+          Voltar para a página inicial
+        </Button>
+      )}
     </div>
   );
 };

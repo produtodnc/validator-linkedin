@@ -4,6 +4,7 @@ import { ResultContentProps } from "@/components/results/ResultContent";
 import { useLinkedinUrlProcessor } from "@/hooks/useLinkedinUrlProcessor";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useToast } from "@/hooks/use-toast";
+import { getRecordIdFromStorage } from "@/services/utils/storageUtils";
 
 interface ResultsContainerProps {
   linkedinUrl: string;
@@ -19,17 +20,29 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, userEm
   // Update current URL if the prop changes
   useEffect(() => {
     if (linkedinUrl && linkedinUrl !== currentUrl) {
-      console.log("[RESULTS_CONTAINER] URL mudou de", currentUrl, "para", linkedinUrl);
+      console.log("[RESULTS_CONTAINER] URL changed from", currentUrl, "to", linkedinUrl);
       previousUrlRef.current = currentUrl;
       setCurrentUrl(linkedinUrl);
     }
   }, [linkedinUrl, currentUrl]);
   
-  // Process the LinkedIn URL and get the record ID
-  const { recordId, isProcessing, retryCount: urlProcessorRetryCount } = useLinkedinUrlProcessor(currentUrl, userEmail);
+  // First check if we already have a stored recordId for this URL
+  const storedRecordId = getRecordIdFromStorage(currentUrl);
+  
+  // Process the LinkedIn URL and get the record ID if not already stored
+  const { recordId, isProcessing, retryCount: urlProcessorRetryCount } = useLinkedinUrlProcessor(
+    currentUrl, 
+    userEmail
+  );
+  
+  // Use the stored recordId if available, otherwise use the one from the processor
+  const finalRecordId = storedRecordId || recordId;
   
   // Fetch and process profile data using the record ID
-  const { isLoading, isError, profile, dataReceived, retryCount, endpointStatus } = useProfileData(currentUrl, recordId);
+  const { isLoading, isError, profile, dataReceived, retryCount, endpointStatus } = useProfileData(
+    currentUrl, 
+    finalRecordId
+  );
   
   // Effect to detect URL changes
   useEffect(() => {
@@ -41,11 +54,11 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, userEm
       });
     }
     
-    console.log("[RESULTS_CONTAINER] Using recordId:", recordId);
+    console.log("[RESULTS_CONTAINER] Using recordId:", finalRecordId);
     console.log("[RESULTS_CONTAINER] Network status:", navigator.onLine ? "Online" : "Offline");
     console.log("[RESULTS_CONTAINER] URL processor retries:", urlProcessorRetryCount);
     console.log("[RESULTS_CONTAINER] Profile data retries:", retryCount);
-  }, [currentUrl, recordId, urlProcessorRetryCount, retryCount, toast]);
+  }, [currentUrl, finalRecordId, urlProcessorRetryCount, retryCount, toast]);
   
   // Prepare the content props that ResultContent expects
   const contentProps: ResultContentProps = {

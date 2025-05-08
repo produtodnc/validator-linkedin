@@ -8,6 +8,7 @@ import ResultContent from "@/components/results/ResultContent";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getCurrentProfileUrl } from "@/services/utils/storageUtils";
 
 const Results = () => {
   const location = useLocation();
@@ -18,23 +19,25 @@ const Results = () => {
   const [showHeader, setShowHeader] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check URL parameters first
+    // First check URL parameters
     const queryParams = new URLSearchParams(window.location.search);
     const emailParam = queryParams.get("email");
     const showHeaderParam = queryParams.get("show-header");
     
     if (emailParam) {
+      console.log("[RESULTS] Found email in URL parameters:", emailParam);
       setUserEmail(emailParam);
     }
     
     if (showHeaderParam === "false") {
+      console.log("[RESULTS] Hiding header based on URL parameter");
       setShowHeader(false);
     }
     
-    // Check URL from location state (from navigation)
+    // Then check URL from location state (from navigation)
     const state = location.state as { linkedinUrl?: string; userEmail?: string } | null;
     if (state?.linkedinUrl) {
-      console.log("Got URL from navigation state:", state.linkedinUrl);
+      console.log("[RESULTS] Got URL from navigation state:", state.linkedinUrl);
       setLinkedinUrl(state.linkedinUrl);
       
       // Also get email from state if available
@@ -46,16 +49,16 @@ const Results = () => {
     }
     
     // If no URL in state, try to get from localStorage
-    const storedUrl = localStorage.getItem('currentProfileUrl');
+    const storedUrl = getCurrentProfileUrl();
     if (storedUrl) {
-      console.log("Got URL from localStorage:", storedUrl);
+      console.log("[RESULTS] Got URL from localStorage:", storedUrl);
       setLinkedinUrl(storedUrl);
       return;
     }
 
-    // If we couldn't get the URL, show a warning and let the user continue
-    // Only redirect to home if no email parameter is present
+    // If we still don't have a URL and don't have the email parameter, show error and redirect
     if (!emailParam) {
+      console.log("[RESULTS] No URL or email found, redirecting to home");
       toast({
         title: "Sem dados",
         description: "Nenhum perfil foi submetido para análise",
@@ -71,14 +74,16 @@ const Results = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex flex-col items-center">
-          <Button
-            onClick={() => navigate("/")}
-            variant="ghost"
-            className="mb-6 self-start flex items-center text-gray-600"
-          >
-            <ArrowLeft className="mr-2" size={18} />
-            Voltar para o início
-          </Button>
+          {showHeader && (
+            <Button
+              onClick={() => navigate("/")}
+              variant="ghost"
+              className="mb-6 self-start flex items-center text-gray-600"
+            >
+              <ArrowLeft className="mr-2" size={18} />
+              Voltar para o início
+            </Button>
+          )}
           
           <div className="w-full max-w-5xl mx-auto">
             <ResultsContainer linkedinUrl={linkedinUrl} userEmail={userEmail}>

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { sendUrlToWebhook, saveCurrentProfileUrl } from "@/services/linkedinService";
+import { sendUrlToWebhook } from "@/services/api/linkedinApi";
+import { saveCurrentProfileUrl } from "@/services/utils/storageUtils";
 import EmailModal from "@/components/EmailModal";
 
 const Home = () => {
@@ -15,6 +16,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [autoRedirect, setAutoRedirect] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -23,35 +25,25 @@ const Home = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const emailParam = queryParams.get("email");
+    const showHeaderParam = queryParams.get("show-header");
     
     // Store email from URL parameter if present
     if (emailParam) {
+      console.log("[HOME] Email found in URL parameters:", emailParam);
       setUserEmail(emailParam);
       
       // Check if there's also a show-header parameter
-      const showHeaderParam = queryParams.get("show-header");
-      
-      // If show-header=true, prepare for automatic processing
-      if (showHeaderParam === "true") {
-        // Check if there's a stored LinkedIn URL in localStorage
-        const storedUrl = localStorage.getItem('currentProfileUrl');
-        if (storedUrl) {
-          // If we have both email and a stored URL, redirect to results automatically
-          navigate("/resultados", {
-            state: {
-              linkedinUrl: storedUrl,
-              userEmail: emailParam
-            }
-          });
-        }
+      if (showHeaderParam === "false") {
+        console.log("[HOME] show-header=false parameter detected");
+        setAutoRedirect(true);
       }
     }
-  }, [location, navigate]);
+  }, [location]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validação básica do formato de URL do LinkedIn
+    // Basic validation for LinkedIn URL format
     if (!linkedinUrl.includes("linkedin.com/")) {
       toast({
         title: "URL inválida",
@@ -63,22 +55,24 @@ const Home = () => {
 
     // Save the LinkedIn URL to localStorage for future reference
     saveCurrentProfileUrl(linkedinUrl);
+    console.log("[HOME] LinkedIn URL saved to localStorage:", linkedinUrl);
 
-    // If we don't have the user's email yet, show the email modal
-    if (!userEmail) {
+    // If we don't have the user's email yet and not in auto-redirect mode, show the email modal
+    if (!userEmail && !autoRedirect) {
       setShowEmailModal(true);
       return;
     }
 
-    // If we have the email, proceed with form submission
+    // If we have the email or in auto-redirect mode, proceed with form submission
     await processLinkedinUrl();
   };
 
   const processLinkedinUrl = async () => {
     setIsLoading(true);
     try {
-      // Utilizando nossa função específica para enviar a URL para o webhook
+      // Send the URL to the webhook
       const response = await sendUrlToWebhook(linkedinUrl, userEmail);
+      
       if (response.error) {
         toast({
           title: "Erro",
@@ -91,16 +85,25 @@ const Home = () => {
           description: "Seu perfil do LinkedIn foi enviado para validação"
         });
 
-        // Redireciona para a página de resultados com a URL como parâmetro de estado
-        navigate("/resultados", {
-          state: {
-            linkedinUrl,
-            userEmail
-          }
+        // Redirect to results page with URL and email as state parameters
+        const resultPath = "/resultados";
+        const navigationState = {
+          linkedinUrl,
+          userEmail
+        };
+        
+        // If auto-redirect is enabled, pass the show-header parameter
+        const queryParams = autoRedirect ? `?show-header=false` : '';
+        
+        // Add email parameter if available
+        const emailParam = userEmail ? `${queryParams ? '&' : '?'}email=${encodeURIComponent(userEmail)}` : '';
+        
+        navigate(`${resultPath}${queryParams}${emailParam}`, {
+          state: navigationState
         });
       }
     } catch (error) {
-      console.error("Erro ao enviar dados:", error);
+      console.error("Error sending data:", error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao enviar seu perfil. Tente novamente.",
