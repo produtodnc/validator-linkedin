@@ -1,6 +1,6 @@
 
 // Re-export types and functions from modular files
-export { LinkedInProfile, ApiResponse } from './types/linkedinTypes';
+export type { LinkedInProfile, ApiResponse } from './types/linkedinTypes';
 export { sendUrlToWebhook } from './api/linkedinApi';
 export { 
   saveRecordIdToStorage, 
