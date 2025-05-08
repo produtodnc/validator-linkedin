@@ -38,7 +38,7 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
   
   const getRetryMessage = () => {
     if (retryCount <= 4) {
-      return `Consultando dados...: Verificando se os dados já estão disponíveis.`;
+      return `Consultando dados... Verificando se os dados já estão disponíveis.`;
     }
     return `Tentativa adicional... Continuamos verificando o banco de dados.`;
   };
