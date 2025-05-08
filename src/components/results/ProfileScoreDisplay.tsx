@@ -39,8 +39,9 @@ const ProfileScoreDisplay = ({
   const projetosScore = convertScore(profile.feedback_projetos_nota || profile.nota_projetos);
   const certificadosScore = convertScore(profile.feedback_certificados_nota || profile.nota_certificados);
 
-  // Calculate overall completion score based on all individual scores
-  const completionScore = profile.completionScore || Math.round((headlineScore + sobreScore + experienceScore + projetosScore + certificadosScore) / 5);
+  // Calculate overall completion score based on individual scores, excluding "Projetos"
+  const completionScore = profile.completionScore || 
+    Math.round((headlineScore + sobreScore + experienceScore + certificadosScore) / 4);
 
   // Animation effect for the score
   useEffect(() => {

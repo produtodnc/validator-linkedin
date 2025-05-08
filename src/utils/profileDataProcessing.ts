@@ -9,8 +9,8 @@ export const calculateCompletionScore = (data: any) => {
     'feedback_headline_nota',
     'feedback_sobre_nota',
     'feedback_experience_nota',
-    'feedback_projetos_nota',
     'feedback_certificados_nota'
+    // Note: 'feedback_projetos_nota' is excluded from the calculation
   ];
   
   let totalScore = 0;

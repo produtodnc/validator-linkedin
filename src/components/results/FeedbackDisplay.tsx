@@ -30,8 +30,8 @@ const FeedbackDisplay = ({
   const projetosScore = convertScore(profile.feedback_projetos_nota || profile.nota_projetos);
   const certificadosScore = convertScore(profile.feedback_certificados_nota || profile.nota_certificados);
 
-  // Calculate the overall score based on all individual scores
-  const overallScore = Math.round((headlineScore + sobreScore + experienceScore + projetosScore + certificadosScore) / 5);
+  // Calculate the overall score based on all individual scores, excluding "Projetos"
+  const overallScore = Math.round((headlineScore + sobreScore + experienceScore + certificadosScore) / 4);
 
   // State to track open/closed sections
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
