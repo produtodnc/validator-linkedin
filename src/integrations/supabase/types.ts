@@ -123,6 +123,7 @@ export type Database = {
       linkedin_links: {
         Row: {
           created_at: string
+          email: string | null
           feedback_certificados: string | null
           feedback_certificados_nota: number | null
           feedback_experience: string | null
@@ -138,6 +139,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           feedback_certificados?: string | null
           feedback_certificados_nota?: number | null
           feedback_experience?: string | null
@@ -153,6 +155,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           feedback_certificados?: string | null
           feedback_certificados_nota?: number | null
           feedback_experience?: string | null

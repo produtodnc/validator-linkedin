@@ -7,10 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ResultsContainerProps {
   linkedinUrl: string;
+  userEmail?: string | null;
   children: React.ReactNode;
 }
 
-const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, children }) => {
+const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, userEmail, children }) => {
   const { toast } = useToast();
   const [currentUrl, setCurrentUrl] = useState(linkedinUrl);
   const previousUrlRef = useRef<string | null>(null);
@@ -25,7 +26,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = ({ linkedinUrl, childr
   }, [linkedinUrl, currentUrl]);
   
   // Process the LinkedIn URL and get the record ID
-  const { recordId, isProcessing, retryCount: urlProcessorRetryCount } = useLinkedinUrlProcessor(currentUrl);
+  const { recordId, isProcessing, retryCount: urlProcessorRetryCount } = useLinkedinUrlProcessor(currentUrl, userEmail);
   
   // Fetch and process profile data using the record ID
   const { isLoading, isError, profile, dataReceived, retryCount, endpointStatus } = useProfileData(currentUrl, recordId);

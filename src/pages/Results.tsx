@@ -78,7 +78,7 @@ const Results = () => {
           </Button>
           
           <div className="w-full max-w-5xl mx-auto">
-            <ResultsContainer linkedinUrl={linkedinUrl}>
+            <ResultsContainer linkedinUrl={linkedinUrl} userEmail={userEmail}>
               <ResultContent />
             </ResultsContainer>
           </div>

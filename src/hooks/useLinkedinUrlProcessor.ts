@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -6,7 +7,7 @@ import { sendUrlToWebhook } from "@/services/linkedinService";
 /**
  * Hook for processing LinkedIn URL submissions
  */
-export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
+export const useLinkedinUrlProcessor = (linkedinUrl: string, userEmail: string | null = null) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [recordId, setRecordId] = useState<string | null>(null);
@@ -80,6 +81,7 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
     sessionStorage.setItem('currentProfileUrl', linkedinUrl);
     
     console.log("[URL_PROCESSOR] Iniciando análise para URL:", linkedinUrl);
+    console.log("[URL_PROCESSOR] Email do usuário:", userEmail);
     
     // Função para tentar enviar a URL com retry
     const attemptSendUrl = async () => {
@@ -91,7 +93,7 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
         }
         
         console.log(`[URL_PROCESSOR] Tentativa ${retryCount + 1} de enviar URL:`, linkedinUrl);
-        const response = await sendUrlToWebhook(linkedinUrl);
+        const response = await sendUrlToWebhook(linkedinUrl, userEmail);
         
         // Verificar novamente se a URL não mudou durante a requisição
         if (currentUrlRef.current !== linkedinUrl) {
@@ -176,7 +178,7 @@ export const useLinkedinUrlProcessor = (linkedinUrl: string) => {
     return () => {
       // Mantemos o recordId no localStorage e sessionStorage para quando o usuário retornar
     };
-  }, [linkedinUrl, navigate, toast, retryCount, maxRetries, recordId]);
+  }, [linkedinUrl, navigate, toast, retryCount, maxRetries, recordId, userEmail]);
 
   return { recordId, isProcessing, retryCount };
 };

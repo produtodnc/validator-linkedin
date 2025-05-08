@@ -48,9 +48,10 @@ export interface ApiResponse {
 const webhookUrl = "https://workflow.dnc.group/webhook/e8a75359-7699-4bef-bdfd-8dcc3d793964";
 
 // Função para enviar a URL do LinkedIn e o ID gerado para o webhook
-export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse> => {
+export const sendUrlToWebhook = async (linkedinUrl: string, email: string | null = null): Promise<ApiResponse> => {
   try {
     console.log("[LINKEDIN_SERVICE] Processando URL do LinkedIn:", linkedinUrl);
+    console.log("[LINKEDIN_SERVICE] Email fornecido:", email);
     
     // Verificar conexão com Supabase
     try {
@@ -58,7 +59,8 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       const { data: insertedData, error: insertError } = await supabase
         .from('linkedin_links')
         .insert({
-          linkedin_url: linkedinUrl
+          linkedin_url: linkedinUrl,
+          email: email // Salvar o email se fornecido
         })
         .select()
         .single();
@@ -94,12 +96,13 @@ export const sendUrlToWebhook = async (linkedinUrl: string): Promise<ApiResponse
       
       // Agora tenta enviar o ID e a URL para o webhook
       try {
-        console.log("[LINKEDIN_SERVICE] Enviando URL e ID para o webhook:", linkedinUrl, recordId);
+        console.log("[LINKEDIN_SERVICE] Enviando URL, ID e email para o webhook:", linkedinUrl, recordId, email);
         
-        // Enviamos a URL do LinkedIn, o ID do registro e uma referência de tempo
+        // Enviamos a URL do LinkedIn, o ID do registro, o email e uma referência de tempo
         const webhookData = {
           linkedinUrl,
           recordId,
+          email,
           requestTime: new Date().toISOString()
         };
         

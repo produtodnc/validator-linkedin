@@ -71,7 +71,7 @@ const Home = () => {
     setIsLoading(true);
     try {
       // Utilizando nossa função específica para enviar a URL para o webhook
-      const response = await sendUrlToWebhook(linkedinUrl);
+      const response = await sendUrlToWebhook(linkedinUrl, userEmail);
       if (response.error) {
         toast({
           title: "Erro",
