@@ -38,15 +38,14 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
   
   const getRetryMessage = () => {
     if (retryCount <= 4) {
-      return `Consultando dados (${retryCount}/4): Verificando se os dados já estão disponíveis.`;
+      return `Consultando dados...: Verificando se os dados já estão disponíveis.`;
     }
-    return `Tentativa adicional ${retryCount - 4}/3: Continuamos verificando o banco de dados.`;
+    return `Tentativa adicional... Continuamos verificando o banco de dados.`;
   };
   
   return (
     <div className="flex flex-col items-center justify-center p-12">
-      <div className="h-12 w-12 border-4 border-t-[#0FA0CE] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-gray-600 mt-4 text-center">{waitingMessage}</p>
+      
       <p className="text-gray-500 text-sm mt-2 text-center">
         {retryCount > 0 
           ? getRetryMessage()
