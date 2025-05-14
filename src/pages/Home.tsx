@@ -17,6 +17,7 @@ const Home = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [autoRedirect, setAutoRedirect] = useState(false);
+  const [hideHeader, setHideHeader] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -26,15 +27,17 @@ const Home = () => {
     const queryParams = new URLSearchParams(location.search);
     const emailParam = queryParams.get("email");
     const showHeaderParam = queryParams.get("show-header");
+    const headerParam = queryParams.get("header");
     
     // Store email from URL parameter if present
     if (emailParam) {
       console.log("[HOME] Email found in URL parameters:", emailParam);
       setUserEmail(emailParam);
       
-      // Check if there's also a show-header parameter
-      if (showHeaderParam === "false") {
-        console.log("[HOME] show-header=false parameter detected");
+      // Set hideHeader to true if show-header=true OR header=true
+      if (showHeaderParam === "true" || headerParam === "true") {
+        console.log("[HOME] Header hiding parameter detected");
+        setHideHeader(true);
         setAutoRedirect(true);
       }
     }
@@ -92,13 +95,26 @@ const Home = () => {
           userEmail
         };
         
-        // If auto-redirect is enabled, pass the show-header parameter
-        const queryParams = autoRedirect ? `?show-header=false` : '';
+        // Build query params based on available options
+        let queryParams = '';
+        
+        // If hide header is enabled, pass the appropriate parameter
+        if (hideHeader) {
+          // Using show-header=true to hide the header
+          queryParams = queryParams ? `${queryParams}&show-header=true` : '?show-header=true';
+        } else {
+          // Explicitly set show-header=false when we want to show the header
+          queryParams = queryParams ? `${queryParams}&show-header=false` : '?show-header=false';
+        }
         
         // Add email parameter if available
-        const emailParam = userEmail ? `${queryParams ? '&' : '?'}email=${encodeURIComponent(userEmail)}` : '';
+        if (userEmail) {
+          queryParams = queryParams 
+            ? `${queryParams}&email=${encodeURIComponent(userEmail)}` 
+            : `?email=${encodeURIComponent(userEmail)}`;
+        }
         
-        navigate(`${resultPath}${queryParams}${emailParam}`, {
+        navigate(`${resultPath}${queryParams}`, {
           state: navigationState
         });
       }
@@ -114,7 +130,6 @@ const Home = () => {
     }
   };
 
-  // Handle email submission from modal
   const handleEmailSubmit = (email: string) => {
     setUserEmail(email);
     setShowEmailModal(false);
@@ -125,7 +140,7 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-blue-50">
-      <Header />
+      {!hideHeader && <Header />}
       
       <main className="flex-grow flex flex-col items-center justify-center px-4 bg-slate-100">
         <div className="max-w-5xl w-full text-center mb-52 mx-0 px-0 my-0 py-0">
@@ -161,7 +176,7 @@ const Home = () => {
         </div>
       </main>
       
-      <Footer />
+      {!hideHeader && <Footer />}
       
       {/* Email Modal */}
       <EmailModal 
