@@ -23,15 +23,21 @@ const Results = () => {
     const queryParams = new URLSearchParams(window.location.search);
     const emailParam = queryParams.get("email");
     const showHeaderParam = queryParams.get("show-header");
+    const headerParam = queryParams.get("header");
     
     if (emailParam) {
       console.log("[RESULTS] Found email in URL parameters:", emailParam);
       setUserEmail(emailParam);
     }
     
-    if (showHeaderParam === "false") {
+    // Check if we should hide the header
+    // If show-header=true, hide the header
+    if (showHeaderParam === "true" || headerParam === "true") {
       console.log("[RESULTS] Hiding header based on URL parameter");
       setShowHeader(false);
+    } else {
+      // For any other value or if not present, show the header
+      setShowHeader(true);
     }
     
     // Then check URL from location state (from navigation)
