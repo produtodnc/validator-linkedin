@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { LinkedInProfile } from "@/services/linkedinService";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -129,7 +128,7 @@ const FeedbackDisplay = ({
           <Collapsible open={openSections.projetos} onOpenChange={() => toggleSection("projetos")} className="w-full">
             <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-5 bg-gray-50 hover:bg-gray-100 rounded-full transition-all">
               <div className="flex items-center justify-between w-full pr-4">
-                <span className="font-semibold text-lg text-gray-800">Projetos</span>
+                <span className="font-semibold text-lg text-gray-800">Projetos (opcional)</span>
                 <div className="flex items-center">
                   <span className={`px-3 py-1 rounded-full text-sm mr-2 ${projetosScore < 60 ? "bg-red-100 text-red-500" : "bg-green-100 text-green-500"}`}>
                     {projetosScore}/100
